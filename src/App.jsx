@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Dashboard from './pages/Dashboard'
@@ -8,6 +9,11 @@ import Attendance from './pages/Attendance'
 import MonthlyReport from './pages/MonthlyReport'
 import Login from './pages/Login'
 import Swal from 'sweetalert2'
+import {
+    MdDashboard, MdPeople, MdCalendarMonth, MdToday,
+    MdAssignment, MdBarChart, MdLogout, MdMenu, MdClose,
+    MdMenuBook
+} from 'react-icons/md'
 
 // Protected Route Component
 function ProtectedRoute({ children }) {
@@ -16,13 +22,9 @@ function ProtectedRoute({ children }) {
 
     if (loading) {
         return (
-            <div className="min-vh-100 d-flex align-items-center justify-content-center">
-                <div className="text-center">
-                    <div className="spinner-border text-primary" style={{ width: '3rem', height: '3rem' }} role="status">
-                        <span className="visually-hidden">جاري التحميل...</span>
-                    </div>
-                    <p className="mt-3 text-muted">جاري التحقق من الجلسة...</p>
-                </div>
+            <div className="loading-screen">
+                <div className="loading-spinner" />
+                <span className="loading-text">جاري التحقق من الجلسة...</span>
             </div>
         )
     }
@@ -34,18 +36,35 @@ function ProtectedRoute({ children }) {
     return children
 }
 
+// NavLink wrapper
+function NavItem({ to, icon, label }) {
+    const location = useLocation()
+    const isActive = location.pathname === to
+    return (
+        <li>
+            <Link className={`nav-link-custom${isActive ? ' active' : ''}`} to={to}>
+                {icon}
+                <span>{label}</span>
+            </Link>
+        </li>
+    )
+}
+
 // Main Layout Component with Navbar
 function MainLayout({ children }) {
     const { user, signOut } = useAuth()
+    const [menuOpen, setMenuOpen] = useState(false)
 
     const handleSignOut = async () => {
         const result = await Swal.fire({
             title: 'هل أنت متأكد؟',
             text: 'هل تريد تسجيل الخروج؟',
             icon: 'question',
+            background: '#111827',
+            color: '#E2E8F0',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
+            confirmButtonColor: '#EF4444',
+            cancelButtonColor: '#1E293B',
             confirmButtonText: 'نعم، تسجيل الخروج',
             cancelButtonText: 'إلغاء'
         })
@@ -57,81 +76,55 @@ function MainLayout({ children }) {
                 title: 'تم تسجيل الخروج',
                 text: 'تم تسجيل الخروج بنجاح',
                 timer: 1500,
-                showConfirmButton: false
+                showConfirmButton: false,
+                background: '#111827',
+                color: '#E2E8F0'
             })
         }
     }
 
+    const initials = user?.email ? user.email[0].toUpperCase() : '؟'
+
     return (
-        <div className="min-vh-100 bg-light">
+        <div className="app-wrapper">
             {/* Navigation Bar */}
-            <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-                <div className="container-fluid">
-                    <Link className="navbar-brand fw-bold" to="/">
-                        📚 نظام إدارة الدروس الخصوصية
-                    </Link>
-                    <button
-                        className="navbar-toggler"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#navbarNav"
-                        aria-controls="navbarNav"
-                        aria-expanded="false"
-                        aria-label="Toggle navigation"
-                    >
-                        <span className="navbar-toggler-icon"></span>
-                    </button>
-                    <div className="collapse navbar-collapse" id="navbarNav">
-                        <ul className="navbar-nav me-auto">
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/">
-                                    الرئيسية
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/students">
-                                    الطلاب
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/schedule">
-                                    جدولة الدروس
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/daily-classes">
-                                    الحصص اليومية
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/attendance">
-                                    الحضور والسجلات
-                                </Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/monthly-report">
-                                    📅 السجل الشهري
-                                </Link>
-                            </li>
-                        </ul>
-                        {/* User Info & Sign Out */}
-                        <div className="d-flex align-items-center">
-                            <span className="text-white me-3">
-                                <small>👤 {user?.email}</small>
-                            </span>
-                            <button
-                                className="btn btn-outline-light btn-sm"
-                                onClick={handleSignOut}
-                            >
-                                🚪 تسجيل الخروج
-                            </button>
-                        </div>
+            <nav className="top-navbar">
+                <Link className="navbar-brand-custom" to="/">
+                    <div className="brand-icon">
+                        <MdMenuBook size={18} />
                     </div>
+                    <span>نظام الدروس الخصوصية</span>
+                </Link>
+
+                {/* Desktop links */}
+                <ul className={`navbar-links${menuOpen ? ' open' : ''}`}>
+                    <NavItem to="/" icon={<MdDashboard size={16} />} label="الرئيسية" />
+                    <NavItem to="/students" icon={<MdPeople size={16} />} label="الطلاب" />
+                    <NavItem to="/schedule" icon={<MdCalendarMonth size={16} />} label="جدولة الدروس" />
+                    <NavItem to="/daily-classes" icon={<MdToday size={16} />} label="الحصص اليومية" />
+                    <NavItem to="/attendance" icon={<MdAssignment size={16} />} label="الحضور" />
+                    <NavItem to="/monthly-report" icon={<MdBarChart size={16} />} label="السجل الشهري" />
+                </ul>
+
+                <div className="navbar-user">
+                    <div className="user-pill">
+                        <div className="user-avatar">{initials}</div>
+                        <span style={{ maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {user?.email}
+                        </span>
+                    </div>
+                    <button className="btn-signout" onClick={handleSignOut}>
+                        <MdLogout size={15} />
+                        <span>خروج</span>
+                    </button>
+                    <button className="nav-toggler" onClick={() => setMenuOpen(o => !o)} aria-label="Toggle menu">
+                        {menuOpen ? <MdClose size={22} color="#94A3B8" /> : <MdMenu size={22} color="#94A3B8" />}
+                    </button>
                 </div>
             </nav>
 
             {/* Main Content */}
-            <main className="container-fluid py-4">
+            <main>
                 {children}
             </main>
         </div>

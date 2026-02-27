@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import Swal from 'sweetalert2'
+import { MdAssignment, MdCalendarToday, MdEditNote, MdDeleteOutline, MdCheckCircle, MdCancel, MdSchedule, MdNotes } from 'react-icons/md'
+
+const swalTheme = { background: '#111827', color: '#E2E8F0' }
 
 function Attendance() {
     const [attendanceRecords, setAttendanceRecords] = useState([])
@@ -164,141 +167,127 @@ function Attendance() {
     const stats = getStatistics()
 
     return (
-        <div className="container">
-            <div className="row mb-4">
-                <div className="col">
-                    <h1 className="display-5 fw-bold text-primary">الحضور والسجلات</h1>
-                    <p className="lead text-muted">عرض وتعديل سجلات الحضور</p>
-                </div>
+        <div className="page-content fade-in">
+            {/* Header */}
+            <div className="page-header">
+                <h1 className="page-title">
+                    <span className="page-title-icon"><MdAssignment size={22} /></span>
+                    الحضور والسجلات
+                </h1>
+                <p className="page-subtitle">عرض وتعديل سجلات الحضور</p>
             </div>
 
             {/* Date Picker */}
-            <div className="row mb-4">
-                <div className="col-lg-6">
-                    <div className="card shadow-sm border-0">
-                        <div className="card-body">
-                            <label className="form-label fw-semibold">اختر التاريخ</label>
-                            <input
-                                type="date"
-                                className="form-control form-control-lg"
-                                value={selectedDate}
-                                onChange={(e) => setSelectedDate(e.target.value)}
-                            />
-                        </div>
-                    </div>
+            <div className="glass-card" style={{ maxWidth: 400, marginBottom: '1.5rem' }}>
+                <div className="card-header-custom">
+                    <MdCalendarToday size={16} color="#FFB800" />
+                    اختر التاريخ
+                </div>
+                <div className="card-body-custom">
+                    <input
+                        type="date"
+                        className="form-control-custom form-control-lg-custom"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                    />
                 </div>
             </div>
 
             {/* Statistics */}
             {attendanceRecords.length > 0 && (
-                <div className="row mb-4">
-                    <div className="col">
-                        <div className="card shadow-sm border-0 bg-light">
-                            <div className="card-body">
-                                <h6 className="card-title mb-3">إحصائيات اليوم</h6>
-                                <div className="row text-center">
-                                    <div className="col">
-                                        <div className="h3 mb-0">{stats.total}</div>
-                                        <small className="text-muted">الإجمالي</small>
-                                    </div>
-                                    <div className="col">
-                                        <div className="h3 mb-0 text-success">{stats.present}</div>
-                                        <small className="text-muted">حاضر</small>
-                                    </div>
-                                    <div className="col">
-                                        <div className="h3 mb-0 text-danger">{stats.absent}</div>
-                                        <small className="text-muted">غائب</small>
-                                    </div>
-                                    <div className="col">
-                                        <div className="h3 mb-0 text-warning">{stats.excused}</div>
-                                        <small className="text-muted">بعذر</small>
-                                    </div>
-                                    <div className="col">
-                                        <div className="h3 mb-0 text-secondary">{stats.postponed}</div>
-                                        <small className="text-muted">مؤجل</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <div className="grid-4" style={{ marginBottom: '1.5rem' }}>
+                    <div className="stat-card">
+                        <div className="stat-icon-wrap gold"><MdAssignment size={22} color="#FFB800" /></div>
+                        <div className="stat-value">{stats.total}</div>
+                        <div className="stat-label">الإجمالي</div>
+                    </div>
+                    <div className="stat-card success">
+                        <div className="stat-icon-wrap green"><MdCheckCircle size={22} color="#10B981" /></div>
+                        <div className="stat-value" style={{ color: '#10B981' }}>{stats.present}</div>
+                        <div className="stat-label">حاضر</div>
+                    </div>
+                    <div className="stat-card error">
+                        <div className="stat-icon-wrap red"><MdCancel size={22} color="#EF4444" /></div>
+                        <div className="stat-value" style={{ color: '#EF4444' }}>{stats.absent}</div>
+                        <div className="stat-label">غائب</div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="stat-icon-wrap orange"><MdSchedule size={22} color="#F59E0B" /></div>
+                        <div className="stat-value" style={{ color: '#F59E0B' }}>{stats.excused + stats.postponed}</div>
+                        <div className="stat-label">بعذر / مؤجل</div>
                     </div>
                 </div>
             )}
 
-            {/* Attendance Records Table */}
-            <div className="row">
-                <div className="col">
-                    <div className="card shadow-sm border-0">
-                        <div className="card-body">
-                            <h5 className="card-title mb-3">
-                                سجلات الحضور ({attendanceRecords.length})
-                            </h5>
-
-                            {loading ? (
-                                <div className="text-center py-4">
-                                    <div className="spinner-border text-primary" role="status">
-                                        <span className="visually-hidden">جاري التحميل...</span>
-                                    </div>
-                                </div>
-                            ) : attendanceRecords.length === 0 ? (
-                                <div className="alert alert-info text-center" role="alert">
-                                    لا توجد سجلات حضور لهذا التاريخ
-                                </div>
-                            ) : (
-                                <div className="table-responsive">
-                                    <table className="table table-hover align-middle">
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th style={{ width: '60px' }}>#</th>
-                                                <th>اسم الطالب</th>
-                                                <th>التاريخ</th>
-                                                <th>الحالة</th>
-                                                <th>آخر تحديث</th>
-                                                <th className="text-center" style={{ width: '200px' }}>الإجراءات</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {attendanceRecords.map((record, index) => {
-                                                const statusInfo = statusLabels[record.status]
-                                                return (
-                                                    <tr key={record.id}>
-                                                        <td className="text-muted">{index + 1}</td>
-                                                        <td className="fw-semibold">{record.students.name}</td>
-                                                        <td>{new Date(record.date).toLocaleDateString('ar-EG')}</td>
-                                                        <td>
-                                                            <span className={`badge bg-${statusInfo.color}`}>
-                                                                {statusInfo.icon} {statusInfo.text}
-                                                            </span>
-                                                        </td>
-                                                        <td className="text-muted small">
-                                                            {new Date(record.updated_at).toLocaleString('ar-EG')}
-                                                        </td>
-                                                        <td className="text-center">
-                                                            <button
-                                                                className="btn btn-warning btn-sm me-2"
-                                                                onClick={() => handleUpdateStatus(
-                                                                    record.id,
-                                                                    record.status,
-                                                                    record.students.name
-                                                                )}
-                                                            >
-                                                                ✏️ تعديل
-                                                            </button>
-                                                            <button
-                                                                className="btn btn-danger btn-sm"
-                                                                onClick={() => handleDelete(record.id, record.students.name)}
-                                                            >
-                                                                🗑️ حذف
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                )
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
+            {/* Attendance Table */}
+            <div className="glass-card">
+                <div className="card-header-custom">
+                    <MdNotes size={18} color="#FFB800" />
+                    سجلات الحضور
+                    <span className="badge-custom badge-gold" style={{ marginRight: 'auto' }}>{attendanceRecords.length}</span>
+                </div>
+                <div className="card-body-custom" style={{ padding: 0 }}>
+                    {loading ? (
+                        <div className="empty-state">
+                            <div className="loading-spinner" />
                         </div>
-                    </div>
+                    ) : attendanceRecords.length === 0 ? (
+                        <div className="empty-state">
+                            <div className="empty-state-icon"><MdAssignment size={30} /></div>
+                            <p className="empty-state-title">لا توجد سجلات حضور لهذا التاريخ</p>
+                        </div>
+                    ) : (
+                        <div style={{ overflowX: 'auto' }}>
+                            <table className="table-custom">
+                                <thead>
+                                    <tr>
+                                        <th style={{ width: 50 }}>#</th>
+                                        <th>اسم الطالب</th>
+                                        <th>التاريخ</th>
+                                        <th>الحالة</th>
+                                        <th>آخر تحديث</th>
+                                        <th style={{ textAlign: 'center', width: 160 }}>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {attendanceRecords.map((record, index) => {
+                                        const si = statusLabels[record.status]
+                                        const badgeClass = {
+                                            present: 'badge-success',
+                                            absent: 'badge-danger',
+                                            excused: 'badge-warning',
+                                            postponed: 'badge-muted'
+                                        }[record.status] || 'badge-muted'
+                                        return (
+                                            <tr key={record.id}>
+                                                <td className="text-slate">{index + 1}</td>
+                                                <td className="fw-600">{record.students.name}</td>
+                                                <td className="text-slate fs-sm">{new Date(record.date).toLocaleDateString('ar-EG')}</td>
+                                                <td>
+                                                    <span className={`badge-custom ${badgeClass}`}>
+                                                        {si.icon} {si.text}
+                                                    </span>
+                                                </td>
+                                                <td className="text-slate fs-sm">{new Date(record.updated_at).toLocaleString('ar-EG')}</td>
+                                                <td style={{ textAlign: 'center' }}>
+                                                    <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                                                        <button className="btn-warning-custom" onClick={() => handleUpdateStatus(record.id, record.status, record.students.name)}>
+                                                            <MdEditNote size={15} />
+                                                            تعديل
+                                                        </button>
+                                                        <button className="btn-danger-custom" onClick={() => handleDelete(record.id, record.students.name)}>
+                                                            <MdDeleteOutline size={15} />
+                                                            حذف
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import Swal from 'sweetalert2'
+import { MdCalendarMonth, MdAdd, MdDeleteOutline, MdSchedule, MdPeople, MdAccessTime, MdWarning } from 'react-icons/md'
+
+const swalTheme = { background: '#111827', color: '#E2E8F0' }
 
 function Schedule() {
     const [students, setStudents] = useState([])
@@ -244,187 +247,177 @@ function Schedule() {
 
     if (loading) {
         return (
-            <div className="text-center py-5">
-                <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">جاري التحميل...</span>
-                </div>
+            <div className="loading-screen">
+                <div className="loading-spinner" />
+                <span className="loading-text">جاري تحميل الجدول...</span>
             </div>
         )
     }
 
     return (
-        <div className="container">
-            <div className="row mb-4">
-                <div className="col">
-                    <h1 className="display-5 fw-bold text-primary">جدولة الدروس</h1>
-                    <p className="lead text-muted">إضافة وعرض جدول الحصص الأسبوعية</p>
-                </div>
+        <div className="page-content fade-in">
+            {/* Header */}
+            <div className="page-header">
+                <h1 className="page-title">
+                    <span className="page-title-icon"><MdCalendarMonth size={22} /></span>
+                    جدولة الدروس
+                </h1>
+                <p className="page-subtitle">إضافة وعرض جدول الحصص الأسبوعية</p>
             </div>
 
             {/* Add Schedule Form */}
-            <div className="row mb-4">
-                <div className="col-lg-8">
-                    <div className="card shadow-sm border-0">
-                        <div className="card-body">
-                            <h5 className="card-title mb-4">إضافة حصة جديدة</h5>
-
-                            {students.length === 0 ? (
-                                <div className="alert alert-warning" role="alert">
-                                    يجب إضافة طالب واحد على الأقل قبل جدولة الحصص.
-                                    <a href="/students" className="alert-link me-2">انتقل إلى صفحة الطلاب</a>
-                                </div>
-                            ) : (
-                                <form onSubmit={handleSubmit}>
-                                    <div className="row g-3">
-                                        {/* Student Selection */}
-                                        <div className="col-md-6">
-                                            <label className="form-label">الطالب</label>
-                                            <select
-                                                className="form-select"
-                                                value={formData.studentId}
-                                                onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
-                                                disabled={submitting}
-                                            >
-                                                <option value="">اختر الطالب...</option>
-                                                {students.map(student => (
-                                                    <option key={student.id} value={student.id}>
-                                                        {student.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        {/* Day Selection */}
-                                        <div className="col-md-6">
-                                            <label className="form-label">اليوم</label>
-                                            <select
-                                                className="form-select"
-                                                value={formData.dayOfWeek}
-                                                onChange={(e) => setFormData({ ...formData, dayOfWeek: e.target.value })}
-                                                disabled={submitting}
-                                            >
-                                                <option value="">اختر اليوم...</option>
-                                                {daysOfWeek.map(day => (
-                                                    <option key={day.value} value={day.value}>
-                                                        {day.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        {/* Start Time */}
-                                        <div className="col-md-6">
-                                            <label className="form-label">وقت البداية</label>
-                                            <input
-                                                type="time"
-                                                className="form-control"
-                                                value={formData.startTime}
-                                                onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                                                disabled={submitting}
-                                            />
-                                        </div>
-
-                                        {/* End Time */}
-                                        <div className="col-md-6">
-                                            <label className="form-label">وقت النهاية</label>
-                                            <input
-                                                type="time"
-                                                className="form-control"
-                                                value={formData.endTime}
-                                                onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                                                disabled={submitting}
-                                            />
-                                        </div>
-
-                                        {/* Submit Button */}
-                                        <div className="col-12">
-                                            <button
-                                                type="submit"
-                                                className="btn btn-primary btn-lg w-100"
-                                                disabled={submitting}
-                                            >
-                                                {submitting ? (
-                                                    <>
-                                                        <span className="spinner-border spinner-border-sm ms-2" role="status"></span>
-                                                        جاري التحقق من التعارضات...
-                                                    </>
-                                                ) : (
-                                                    <>📅 إضافة إلى الجدول</>
-                                                )}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                            )}
+            <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
+                <div className="card-header-custom">
+                    <MdAdd size={18} color="#FFB800" />
+                    إضافة حصة جديدة
+                </div>
+                <div className="card-body-custom">
+                    {students.length === 0 ? (
+                        <div className="alert-custom alert-warn-custom">
+                            <MdWarning size={18} />
+                            <span>
+                                يجب إضافة طالب واحد على الأقل قبل جدولة الحصص.{' '}
+                                <a href="/students" style={{ color: '#FFB800', fontWeight: 600 }}>انتقل إلى صفحة الطلاب</a>
+                            </span>
                         </div>
-                    </div>
+                    ) : (
+                        <form onSubmit={handleSubmit}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                                {/* Student */}
+                                <div>
+                                    <label className="form-label-custom">
+                                        <MdPeople size={13} style={{ verticalAlign: 'middle', marginLeft: 4 }} />الطالب
+                                    </label>
+                                    <select
+                                        className="form-control-custom form-select-custom"
+                                        value={formData.studentId}
+                                        onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
+                                        disabled={submitting}
+                                    >
+                                        <option value="">اختر الطالب...</option>
+                                        {students.map(s => (
+                                            <option key={s.id} value={s.id}>{s.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                {/* Day */}
+                                <div>
+                                    <label className="form-label-custom">
+                                        <MdCalendarMonth size={13} style={{ verticalAlign: 'middle', marginLeft: 4 }} />اليوم
+                                    </label>
+                                    <select
+                                        className="form-control-custom form-select-custom"
+                                        value={formData.dayOfWeek}
+                                        onChange={(e) => setFormData({ ...formData, dayOfWeek: e.target.value })}
+                                        disabled={submitting}
+                                    >
+                                        <option value="">اختر اليوم...</option>
+                                        {daysOfWeek.map(d => (
+                                            <option key={d.value} value={d.value}>{d.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                {/* Start Time */}
+                                <div>
+                                    <label className="form-label-custom">
+                                        <MdAccessTime size={13} style={{ verticalAlign: 'middle', marginLeft: 4 }} />وقت البداية
+                                    </label>
+                                    <input
+                                        type="time"
+                                        className="form-control-custom"
+                                        value={formData.startTime}
+                                        onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                                        disabled={submitting}
+                                    />
+                                </div>
+                                {/* End Time */}
+                                <div>
+                                    <label className="form-label-custom">
+                                        <MdAccessTime size={13} style={{ verticalAlign: 'middle', marginLeft: 4 }} />وقت النهاية
+                                    </label>
+                                    <input
+                                        type="time"
+                                        className="form-control-custom"
+                                        value={formData.endTime}
+                                        onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                                        disabled={submitting}
+                                    />
+                                </div>
+                                {/* Submit */}
+                                <div style={{ gridColumn: '1 / -1' }}>
+                                    <button type="submit" className="btn-primary-custom full lg" disabled={submitting}>
+                                        {submitting ? (
+                                            <><div className="loading-spinner" style={{ width: 16, height: 16, borderWidth: 2, borderTopColor: '#0B1221' }} /> جاري التحقق من التعارضات...</>
+                                        ) : (
+                                            <><MdAdd size={18} /> إضافة إلى الجدول</>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    )}
                 </div>
             </div>
 
             {/* Schedules Table */}
-            <div className="row">
-                <div className="col">
-                    <div className="card shadow-sm border-0">
-                        <div className="card-body">
-                            <h5 className="card-title mb-3">
-                                الجدول الأسبوعي ({schedules.length} حصة)
-                            </h5>
-
-                            {schedules.length === 0 ? (
-                                <div className="alert alert-info text-center" role="alert">
-                                    لا يوجد حصص مجدولة حالياً
-                                </div>
-                            ) : (
-                                <div className="table-responsive">
-                                    <table className="table table-hover align-middle">
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th>اليوم</th>
-                                                <th>اسم الطالب</th>
-                                                <th>وقت البداية</th>
-                                                <th>وقت النهاية</th>
-                                                <th>المدة</th>
-                                                <th className="text-center">الإجراءات</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {schedules.map(schedule => {
-                                                const dayName = daysOfWeek.find(d => d.value === schedule.day_of_week)?.label
-
-                                                // Calculate duration
-                                                const start = new Date(`1970-01-01T${schedule.start_time}`)
-                                                const end = new Date(`1970-01-01T${schedule.end_time}`)
-                                                const durationMinutes = (end - start) / 1000 / 60
-                                                const hours = Math.floor(durationMinutes / 60)
-                                                const minutes = durationMinutes % 60
-                                                const durationText = hours > 0
-                                                    ? `${hours} ساعة ${minutes > 0 ? `و ${minutes} دقيقة` : ''}`
-                                                    : `${minutes} دقيقة`
-
-                                                return (
-                                                    <tr key={schedule.id}>
-                                                        <td className="fw-semibold">{dayName}</td>
-                                                        <td>{schedule.students.name}</td>
-                                                        <td>{schedule.start_time}</td>
-                                                        <td>{schedule.end_time}</td>
-                                                        <td className="text-muted">{durationText}</td>
-                                                        <td className="text-center">
-                                                            <button
-                                                                className="btn btn-danger btn-sm"
-                                                                onClick={() => handleDelete(schedule.id)}
-                                                            >
-                                                                🗑️ حذف
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                )
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
+            <div className="glass-card">
+                <div className="card-header-custom">
+                    <MdSchedule size={18} color="#FFB800" />
+                    الجدول الأسبوعي
+                    <span className="badge-custom badge-gold" style={{ marginRight: 'auto' }}>{schedules.length} حصة</span>
+                </div>
+                <div className="card-body-custom" style={{ padding: 0 }}>
+                    {schedules.length === 0 ? (
+                        <div className="empty-state">
+                            <div className="empty-state-icon"><MdCalendarMonth size={30} /></div>
+                            <p className="empty-state-title">لا يوجد حصص مجدولة حالياً</p>
+                            <p className="empty-state-sub">أضف حصة جديدة من النموذج أعلاه</p>
                         </div>
-                    </div>
+                    ) : (
+                        <div style={{ overflowX: 'auto' }}>
+                            <table className="table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>اليوم</th>
+                                        <th>اسم الطالب</th>
+                                        <th>وقت البداية</th>
+                                        <th>وقت النهاية</th>
+                                        <th>المدة</th>
+                                        <th style={{ textAlign: 'center' }}>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {schedules.map(schedule => {
+                                        const dayName = daysOfWeek.find(d => d.value === schedule.day_of_week)?.label
+                                        const start = new Date(`1970-01-01T${schedule.start_time}`)
+                                        const end = new Date(`1970-01-01T${schedule.end_time}`)
+                                        const durationMinutes = (end - start) / 60000
+                                        const hours = Math.floor(durationMinutes / 60)
+                                        const minutes = durationMinutes % 60
+                                        const durationText = hours > 0
+                                            ? `${hours} ساعة${minutes > 0 ? ` و ${minutes} دقيقة` : ''}`
+                                            : `${minutes} دقيقة`
+
+                                        return (
+                                            <tr key={schedule.id}>
+                                                <td><span className="badge-custom badge-gold">{dayName}</span></td>
+                                                <td className="fw-600">{schedule.students.name}</td>
+                                                <td><span className="time-badge"><MdAccessTime size={13} />{schedule.start_time}</span></td>
+                                                <td><span className="time-badge"><MdAccessTime size={13} />{schedule.end_time}</span></td>
+                                                <td className="text-slate fs-sm">{durationText}</td>
+                                                <td style={{ textAlign: 'center' }}>
+                                                    <button className="btn-danger-custom" onClick={() => handleDelete(schedule.id)}>
+                                                        <MdDeleteOutline size={15} />
+                                                        حذف
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

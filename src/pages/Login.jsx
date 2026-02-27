@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
+import { MdEmail, MdLock, MdLogin, MdPersonAdd, MdMenuBook, MdInfoOutline } from 'react-icons/md'
+
+const swalTheme = { background: '#111827', color: '#E2E8F0' }
 
 function Login() {
     const [email, setEmail] = useState('')
@@ -15,22 +18,12 @@ function Login() {
         e.preventDefault()
 
         if (!email || !password) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'تنبيه',
-                text: 'الرجاء إدخال البريد الإلكتروني وكلمة المرور',
-                confirmButtonText: 'حسناً'
-            })
+            Swal.fire({ ...swalTheme, icon: 'warning', title: 'تنبيه', text: 'الرجاء إدخال البريد الإلكتروني وكلمة المرور', confirmButtonText: 'حسناً' })
             return
         }
 
         if (password.length < 6) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'تنبيه',
-                text: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل',
-                confirmButtonText: 'حسناً'
-            })
+            Swal.fire({ ...swalTheme, icon: 'warning', title: 'تنبيه', text: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', confirmButtonText: 'حسناً' })
             return
         }
 
@@ -38,186 +31,128 @@ function Login() {
 
         try {
             if (isSignUp) {
-                // Sign Up
                 const { data, error } = await signUp(email, password)
-
                 if (error) {
-                    if (error.message.includes('already registered')) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'خطأ',
-                            text: 'هذا البريد الإلكتروني مسجل مسبقاً',
-                            confirmButtonText: 'حسناً'
-                        })
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'خطأ',
-                            text: error.message,
-                            confirmButtonText: 'حسناً'
-                        })
-                    }
+                    const msg = error.message.includes('already registered')
+                        ? 'هذا البريد الإلكتروني مسجل مسبقاً'
+                        : error.message
+                    Swal.fire({ ...swalTheme, icon: 'error', title: 'خطأ', text: msg, confirmButtonText: 'حسناً' })
                     return
                 }
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'تم التسجيل بنجاح',
-                    text: 'تم إنشاء الحساب. يرجى تسجيل الدخول الآن.',
-                    confirmButtonText: 'حسناً'
-                }).then(() => {
-                    setIsSignUp(false)
-                })
-
+                Swal.fire({ ...swalTheme, icon: 'success', title: 'تم التسجيل بنجاح', text: 'تم إنشاء الحساب. يرجى تسجيل الدخول الآن.', confirmButtonText: 'حسناً' })
+                    .then(() => { setIsSignUp(false) })
             } else {
-                // Sign In
                 const { data, error } = await signIn(email, password)
-
                 if (error) {
-                    if (error.message.includes('Invalid login credentials')) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'خطأ',
-                            text: 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
-                            confirmButtonText: 'حسناً'
-                        })
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'خطأ',
-                            text: error.message,
-                            confirmButtonText: 'حسناً'
-                        })
-                    }
+                    const msg = error.message.includes('Invalid login credentials')
+                        ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+                        : error.message
+                    Swal.fire({ ...swalTheme, icon: 'error', title: 'خطأ', text: msg, confirmButtonText: 'حسناً' })
                     return
                 }
-
-                // Navigate to home on success
                 navigate('/')
             }
         } catch (error) {
             console.error('Authentication error:', error)
-            Swal.fire({
-                icon: 'error',
-                title: 'خطأ',
-                text: 'حدث خطأ غير متوقع',
-                confirmButtonText: 'حسناً'
-            })
+            Swal.fire({ ...swalTheme, icon: 'error', title: 'خطأ', text: 'حدث خطأ غير متوقع', confirmButtonText: 'حسناً' })
         } finally {
             setLoading(false)
         }
     }
 
     return (
-        <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
-            <div className="container">
-                <div className="row justify-content-center">
-                    <div className="col-md-6 col-lg-5">
-                        <div className="card shadow-lg border-0">
-                            <div className="card-body p-5">
-                                {/* Logo/Title */}
-                                <div className="text-center mb-4">
-                                    <div className="display-1 mb-3">📚</div>
-                                    <h2 className="fw-bold text-primary">
-                                        نظام إدارة الدروس الخصوصية
-                                    </h2>
-                                    <p className="text-muted">
-                                        {isSignUp ? 'إنشاء حساب جديد' : 'تسجيل الدخول'}
-                                    </p>
-                                </div>
+        <div className="login-wrapper">
+            <div className="login-card fade-in">
+                {/* Logo */}
+                <div className="login-logo">
+                    <MdMenuBook size={30} />
+                </div>
 
-                                {/* Form */}
-                                <form onSubmit={handleSubmit}>
-                                    {/* Email Input */}
-                                    <div className="mb-3">
-                                        <label className="form-label fw-semibold">
-                                            البريد الإلكتروني
-                                        </label>
-                                        <input
-                                            type="email"
-                                            className="form-control form-control-lg"
-                                            placeholder="example@email.com"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            disabled={loading}
-                                            required
-                                        />
-                                    </div>
+                <h1 className="login-title">نظام إدارة الدروس الخصوصية</h1>
+                <p className="login-subtitle">
+                    {isSignUp ? 'إنشاء حساب جديد' : 'تسجيل الدخول إلى حسابك'}
+                </p>
 
-                                    {/* Password Input */}
-                                    <div className="mb-4">
-                                        <label className="form-label fw-semibold">
-                                            كلمة المرور
-                                        </label>
-                                        <input
-                                            type="password"
-                                            className="form-control form-control-lg"
-                                            placeholder="••••••••"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            disabled={loading}
-                                            required
-                                            minLength={6}
-                                        />
-                                        <small className="text-muted">
-                                            يجب أن تكون 6 أحرف على الأقل
-                                        </small>
-                                    </div>
+                <form className="login-form" onSubmit={handleSubmit}>
+                    {/* Email */}
+                    <div>
+                        <label className="form-label-custom">
+                            <MdEmail size={14} style={{ verticalAlign: 'middle', marginLeft: '4px' }} />
+                            البريد الإلكتروني
+                        </label>
+                        <input
+                            type="email"
+                            className="form-control-custom form-control-lg-custom"
+                            placeholder="example@email.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            disabled={loading}
+                            required
+                        />
+                    </div>
 
-                                    {/* Submit Button */}
-                                    <button
-                                        type="submit"
-                                        className="btn btn-primary btn-lg w-100 mb-3"
-                                        disabled={loading}
-                                    >
-                                        {loading ? (
-                                            <>
-                                                <span className="spinner-border spinner-border-sm ms-2" role="status"></span>
-                                                جاري {isSignUp ? 'إنشاء الحساب' : 'تسجيل الدخول'}...
-                                            </>
-                                        ) : (
-                                            <>{isSignUp ? '✨ إنشاء حساب' : '🔐 تسجيل الدخول'}</>
-                                        )}
-                                    </button>
-
-                                    {/* Toggle Sign Up/Sign In */}
-                                    <div className="text-center">
-                                        <button
-                                            type="button"
-                                            className="btn btn-link text-decoration-none"
-                                            onClick={() => {
-                                                setIsSignUp(!isSignUp)
-                                                setEmail('')
-                                                setPassword('')
-                                            }}
-                                            disabled={loading}
-                                        >
-                                            {isSignUp ? (
-                                                <>لديك حساب بالفعل؟ <strong>تسجيل الدخول</strong></>
-                                            ) : (
-                                                <>ليس لديك حساب؟ <strong>إنشاء حساب جديد</strong></>
-                                            )}
-                                        </button>
-                                    </div>
-                                </form>
-
-                                {/* Info Box */}
-                                <div className="alert alert-info mt-4 mb-0" role="alert">
-                                    <small>
-                                        <strong>ℹ️ ملاحظة:</strong> جميع البيانات خاصة بك فقط.
-                                        لن يتمكن أي مستخدم آخر من رؤية طلابك أو جداولك.
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="text-center mt-3">
-                            <small className="text-muted">
-                                Built with ❤️ using React + Supabase
-                            </small>
+                    {/* Password */}
+                    <div>
+                        <label className="form-label-custom">
+                            <MdLock size={14} style={{ verticalAlign: 'middle', marginLeft: '4px' }} />
+                            كلمة المرور
+                        </label>
+                        <input
+                            type="password"
+                            className="form-control-custom form-control-lg-custom"
+                            placeholder="••••••••"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            disabled={loading}
+                            required
+                            minLength={6}
+                        />
+                        <div style={{ fontSize: '0.76rem', color: '#475569', marginTop: '0.35rem' }}>
+                            يجب أن تكون 6 أحرف على الأقل
                         </div>
                     </div>
+
+                    {/* Submit */}
+                    <button
+                        type="submit"
+                        className="btn-primary-custom full lg"
+                        disabled={loading}
+                        style={{ marginTop: '0.5rem' }}
+                    >
+                        {loading ? (
+                            <>
+                                <div className="loading-spinner" style={{ width: 18, height: 18, borderWidth: 2, borderTopColor: '#0B1221' }} />
+                                {isSignUp ? 'جاري إنشاء الحساب...' : 'جاري تسجيل الدخول...'}
+                            </>
+                        ) : isSignUp ? (
+                            <><MdPersonAdd size={18} /> إنشاء حساب</>
+                        ) : (
+                            <><MdLogin size={18} /> تسجيل الدخول</>
+                        )}
+                    </button>
+                </form>
+
+                {/* Toggle */}
+                <div className="login-divider">
+                    {isSignUp ? (
+                        <>لديك حساب بالفعل؟
+                            <button onClick={() => { setIsSignUp(false); setEmail(''); setPassword('') }} disabled={loading}>
+                                تسجيل الدخول
+                            </button>
+                        </>
+                    ) : (
+                        <>ليس لديك حساب؟
+                            <button onClick={() => { setIsSignUp(true); setEmail(''); setPassword('') }} disabled={loading}>
+                                إنشاء حساب جديد
+                            </button>
+                        </>
+                    )}
+                </div>
+
+                {/* Note */}
+                <div className="login-note">
+                    <MdInfoOutline size={14} style={{ verticalAlign: 'middle', marginLeft: '5px' }} />
+                    <strong>ملاحظة:</strong> جميع البيانات خاصة بك فقط. لن يتمكن أي مستخدم آخر من رؤية طلابك أو جداولك.
                 </div>
             </div>
         </div>

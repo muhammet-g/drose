@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import Swal from 'sweetalert2'
+import { MdPeople, MdToday, MdCheckCircle, MdPersonAdd, MdCalendarMonth, MdMenuBook, MdAssignment, MdBarChart } from 'react-icons/md'
+import { Link } from 'react-router-dom'
 
 function Dashboard() {
     const [stats, setStats] = useState({
@@ -68,87 +70,73 @@ function Dashboard() {
 
     if (loading) {
         return (
-            <div className="text-center py-5">
-                <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">جاري التحميل...</span>
-                </div>
+            <div className="loading-screen">
+                <div className="loading-spinner" />
+                <span className="loading-text">جاري تحميل الإحصائيات...</span>
             </div>
         )
     }
 
     return (
-        <div className="container">
-            <div className="row mb-4">
-                <div className="col">
-                    <h1 className="display-4 fw-bold text-primary">لوحة التحكم الرئيسية</h1>
-                    <p className="lead text-muted">مرحباً بك في نظام إدارة الدروس الخصوصية</p>
-                </div>
+        <div className="page-content fade-in">
+            {/* Header */}
+            <div className="page-header">
+                <h1 className="page-title">
+                    <span className="page-title-icon"><MdBarChart size={22} /></span>
+                    لوحة التحكم
+                </h1>
+                <p className="page-subtitle">مرحباً بك في نظام إدارة الدروس الخصوصية</p>
             </div>
 
-            <div className="row g-4">
-                {/* Total Students Card */}
-                <div className="col-md-4">
-                    <div className="card border-0 shadow-sm h-100">
-                        <div className="card-body text-center">
-                            <div className="display-1 text-primary mb-3">👥</div>
-                            <h3 className="card-title h2">{stats.totalStudents}</h3>
-                            <p className="card-text text-muted">إجمالي الطلاب</p>
-                        </div>
-                    </div>
+            {/* Stats Grid */}
+            <div className="grid-3" style={{ marginBottom: '2rem' }}>
+                <div className="stat-card">
+                    <div className="stat-icon-wrap gold"><MdPeople size={28} color="#FFB800" /></div>
+                    <div className="stat-value">{stats.totalStudents}</div>
+                    <div className="stat-label">إجمالي الطلاب</div>
                 </div>
-
-                {/* Today's Classes Card */}
-                <div className="col-md-4">
-                    <div className="card border-0 shadow-sm h-100">
-                        <div className="card-body text-center">
-                            <div className="display-1 text-success mb-3">📅</div>
-                            <h3 className="card-title h2">{stats.todayClasses}</h3>
-                            <p className="card-text text-muted">حصص اليوم</p>
-                        </div>
-                    </div>
+                <div className="stat-card">
+                    <div className="stat-icon-wrap green"><MdToday size={28} color="#10B981" /></div>
+                    <div className="stat-value">{stats.todayClasses}</div>
+                    <div className="stat-label">حصص اليوم</div>
                 </div>
-
-                {/* Weekly Attendance Card */}
-                <div className="col-md-4">
-                    <div className="card border-0 shadow-sm h-100">
-                        <div className="card-body text-center">
-                            <div className="display-1 text-info mb-3">✅</div>
-                            <h3 className="card-title h2">{stats.weeklyAttendance}</h3>
-                            <p className="card-text text-muted">حضور هذا الأسبوع</p>
-                        </div>
-                    </div>
+                <div className="stat-card">
+                    <div className="stat-icon-wrap blue"><MdCheckCircle size={28} color="#38BDF8" /></div>
+                    <div className="stat-value">{stats.weeklyAttendance}</div>
+                    <div className="stat-label">حضور هذا الأسبوع</div>
                 </div>
             </div>
 
             {/* Quick Actions */}
-            <div className="row mt-5">
-                <div className="col">
-                    <h2 className="h3 mb-4">الإجراءات السريعة</h2>
-                    <div className="row g-3">
-                        <div className="col-md-3">
-                            <a href="/students" className="btn btn-outline-primary w-100 py-3">
-                                <div className="h4 mb-2">👨‍🎓</div>
-                                إدارة الطلاب
-                            </a>
-                        </div>
-                        <div className="col-md-3">
-                            <a href="/schedule" className="btn btn-outline-success w-100 py-3">
-                                <div className="h4 mb-2">🗓️</div>
-                                جدولة الدروس
-                            </a>
-                        </div>
-                        <div className="col-md-3">
-                            <a href="/daily-classes" className="btn btn-outline-info w-100 py-3">
-                                <div className="h4 mb-2">📚</div>
-                                الحصص اليومية
-                            </a>
-                        </div>
-                        <div className="col-md-3">
-                            <a href="/attendance" className="btn btn-outline-warning w-100 py-3">
-                                <div className="h4 mb-2">📝</div>
-                                الحضور والسجلات
-                            </a>
-                        </div>
+            <div className="glass-card">
+                <div className="card-header-custom">
+                    <MdMenuBook size={18} color="#FFB800" />
+                    الإجراءات السريعة
+                </div>
+                <div className="card-body-custom">
+                    <div className="grid-4">
+                        <Link to="/students" className="action-card">
+                            <div className="action-card-icon"><MdPersonAdd size={24} /></div>
+                            إدارة الطلاب
+                        </Link>
+                        <Link to="/schedule" className="action-card">
+                            <div className="action-card-icon" style={{ background: 'rgba(16,185,129,0.1)', borderColor: 'rgba(16,185,129,0.2)', color: '#10B981' }}>
+                                <MdCalendarMonth size={24} />
+                            </div>
+                            جدولة الدروس
+                        </Link>
+                        <Link to="/daily-classes" className="action-card">
+                            <div className="action-card-icon" style={{ background: 'rgba(56,189,248,0.1)', borderColor: 'rgba(56,189,248,0.2)', color: '#38BDF8' }}>
+                                <MdMenuBook size={24} />
+                            </div>
+                            الحصص اليومية
+                        </Link>
+                        <Link to="/attendance" className="action-card">
+                            <div className="action-card-icon" style={{ background: 'rgba(245,158,11,0.1)', borderColor: 'rgba(245,158,11,0.2)', color: '#F59E0B' }}>
+                                <MdAssignment size={24} />
+                            </div>
+                            الحضور والسجلات
+                        </Link>
                     </div>
                 </div>
             </div>

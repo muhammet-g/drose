@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import Swal from 'sweetalert2'
+import { MdToday, MdCalendarToday, MdAccessTime, MdPerson, MdCheckCircle } from 'react-icons/md'
 
 function DailyClasses() {
     const [selectedDate, setSelectedDate] = useState('')
@@ -163,90 +164,87 @@ function DailyClasses() {
     }
 
     return (
-        <div className="container">
-            <div className="row mb-4">
-                <div className="col">
-                    <h1 className="display-5 fw-bold text-primary">الحصص اليومية</h1>
-                    <p className="lead text-muted">عرض الحصص المجدولة لتاريخ معين</p>
-                </div>
+        <div className="page-content fade-in">
+            {/* Header */}
+            <div className="page-header">
+                <h1 className="page-title">
+                    <span className="page-title-icon"><MdToday size={22} /></span>
+                    الحصص اليومية
+                </h1>
+                <p className="page-subtitle">عرض الحصص المجدولة لتاريخ معين</p>
             </div>
 
             {/* Date Picker */}
-            <div className="row mb-4">
-                <div className="col-lg-6">
-                    <div className="card shadow-sm border-0">
-                        <div className="card-body">
-                            <label className="form-label fw-semibold">اختر التاريخ</label>
-                            <input
-                                type="date"
-                                className="form-control form-control-lg"
-                                value={selectedDate}
-                                onChange={(e) => setSelectedDate(e.target.value)}
-                            />
-                            {selectedDate && (
-                                <div className="mt-2 text-muted">
-                                    <small>📅 اليوم: <strong>{getDayName()}</strong></small>
-                                </div>
-                            )}
+            <div className="glass-card" style={{ maxWidth: 440, marginBottom: '1.5rem' }}>
+                <div className="card-header-custom">
+                    <MdCalendarToday size={16} color="#FFB800" />
+                    اختر التاريخ
+                </div>
+                <div className="card-body-custom">
+                    <input
+                        type="date"
+                        className="form-control-custom form-control-lg-custom"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                    />
+                    {selectedDate && (
+                        <div style={{ marginTop: '0.6rem', fontSize: '0.82rem', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <MdCalendarToday size={13} color="#FFB800" />
+                            اليوم: <strong style={{ color: '#FFB800' }}>{getDayName()}</strong>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
 
-            {/* Classes Display */}
-            <div className="row">
-                <div className="col">
-                    <div className="card shadow-sm border-0">
-                        <div className="card-body">
-                            <h5 className="card-title mb-3">
-                                حصص {getDayName()} ({classes.length} حصة)
-                            </h5>
-
-                            {loading ? (
-                                <div className="text-center py-4">
-                                    <div className="spinner-border text-primary" role="status">
-                                        <span className="visually-hidden">جاري التحميل...</span>
-                                    </div>
-                                </div>
-                            ) : classes.length === 0 ? (
-                                <div className="alert alert-info text-center" role="alert">
-                                    لا توجد حصص مجدولة في هذا اليوم
-                                </div>
-                            ) : (
-                                <div className="row g-3">
-                                    {classes.map((classItem) => (
-                                        <div key={classItem.id} className="col-md-6 col-lg-4">
-                                            <div className="card border-primary h-100">
-                                                <div className="card-body">
-                                                    <h5 className="card-title text-primary">
-                                                        👨‍🎓 {classItem.students.name}
-                                                    </h5>
-                                                    <hr />
-                                                    <div className="mb-2">
-                                                        <small className="text-muted">🕐 وقت البداية:</small>
-                                                        <div className="fw-semibold">{classItem.start_time}</div>
-                                                    </div>
-                                                    <div className="mb-3">
-                                                        <small className="text-muted">🕑 وقت النهاية:</small>
-                                                        <div className="fw-semibold">{classItem.end_time}</div>
-                                                    </div>
-                                                    <button
-                                                        className="btn btn-success w-100"
-                                                        onClick={() => showAttendanceOptions(
-                                                            classItem.students.id,
-                                                            classItem.students.name
-                                                        )}
-                                                    >
-                                                        تسجيل الحضور
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+            {/* Classes */}
+            <div className="glass-card">
+                <div className="card-header-custom">
+                    <MdToday size={18} color="#FFB800" />
+                    حصص {getDayName()}
+                    <span className="badge-custom badge-gold" style={{ marginRight: 'auto' }}>{classes.length} حصة</span>
+                </div>
+                <div className="card-body-custom">
+                    {loading ? (
+                        <div className="empty-state">
+                            <div className="loading-spinner" />
                         </div>
-                    </div>
+                    ) : classes.length === 0 ? (
+                        <div className="empty-state">
+                            <div className="empty-state-icon"><MdToday size={30} /></div>
+                            <p className="empty-state-title">لا توجد حصص مجدولة في هذا اليوم</p>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+                            {classes.map((classItem) => (
+                                <div key={classItem.id} className="class-card">
+                                    <div className="class-card-name">
+                                        <MdPerson size={18} color="#FFB800" />
+                                        {classItem.students.name}
+                                    </div>
+                                    <div className="divider" style={{ margin: '0.6rem 0' }} />
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <span className="time-badge">
+                                            <MdAccessTime size={13} />
+                                            {classItem.start_time}
+                                        </span>
+                                        <span style={{ color: '#475569', alignSelf: 'center', fontSize: '0.8rem' }}>←</span>
+                                        <span className="time-badge">
+                                            <MdAccessTime size={13} />
+                                            {classItem.end_time}
+                                        </span>
+                                    </div>
+                                    <button
+                                        className="btn-primary-custom full"
+                                        style={{ marginTop: '0.5rem' }}
+                                        onClick={() => showAttendanceOptions(classItem.students.id, classItem.students.name)}
+                                    >
+                                        <MdCheckCircle size={16} />
+                                        تسجيل الحضور
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

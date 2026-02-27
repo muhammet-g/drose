@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import Swal from 'sweetalert2'
+import { MdPeople, MdPersonAdd, MdDeleteOutline, MdCalendarToday } from 'react-icons/md'
+
+const swalTheme = { background: '#111827', color: '#E2E8F0' }
 
 function Students() {
     const [students, setStudents] = useState([])
@@ -23,12 +26,7 @@ function Students() {
             setStudents(data || [])
         } catch (error) {
             console.error('Error fetching students:', error)
-            Swal.fire({
-                icon: 'error',
-                title: 'خطأ',
-                text: 'حدث خطأ أثناء تحميل قائمة الطلاب',
-                confirmButtonText: 'حسناً'
-            })
+            Swal.fire({ ...swalTheme, icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء تحميل قائمة الطلاب', confirmButtonText: 'حسناً' })
         } finally {
             setLoading(false)
         }
@@ -38,12 +36,7 @@ function Students() {
         e.preventDefault()
 
         if (!newStudentName.trim()) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'تنبيه',
-                text: 'الرجاء إدخال اسم الطالب',
-                confirmButtonText: 'حسناً'
-            })
+            Swal.fire({ ...swalTheme, icon: 'warning', title: 'تنبيه', text: 'الرجاء إدخال اسم الطالب', confirmButtonText: 'حسناً' })
             return
         }
 
@@ -57,24 +50,13 @@ function Students() {
 
             if (error) throw error
 
-            Swal.fire({
-                icon: 'success',
-                title: 'تم بنجاح',
-                text: 'تمت إضافة الطالب بنجاح',
-                timer: 1500,
-                showConfirmButton: false
-            })
+            Swal.fire({ ...swalTheme, icon: 'success', title: 'تم بنجاح', text: 'تمت إضافة الطالب بنجاح', timer: 1500, showConfirmButton: false })
 
             setNewStudentName('')
             fetchStudents()
         } catch (error) {
             console.error('Error adding student:', error)
-            Swal.fire({
-                icon: 'error',
-                title: 'خطأ',
-                text: 'حدث خطأ أثناء إضافة الطالب',
-                confirmButtonText: 'حسناً'
-            })
+            Swal.fire({ ...swalTheme, icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء إضافة الطالب', confirmButtonText: 'حسناً' })
         } finally {
             setSubmitting(false)
         }
@@ -124,104 +106,100 @@ function Students() {
 
     if (loading) {
         return (
-            <div className="text-center py-5">
-                <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">جاري التحميل...</span>
-                </div>
+            <div className="loading-screen">
+                <div className="loading-spinner" />
+                <span className="loading-text">جاري تحميل قائمة الطلاب...</span>
             </div>
         )
     }
 
     return (
-        <div className="container">
-            <div className="row mb-4">
-                <div className="col">
-                    <h1 className="display-5 fw-bold text-primary">إدارة الطلاب</h1>
-                    <p className="lead text-muted">إضافة وعرض وحذف الطلاب</p>
-                </div>
+        <div className="page-content fade-in">
+            {/* Header */}
+            <div className="page-header">
+                <h1 className="page-title">
+                    <span className="page-title-icon"><MdPeople size={22} /></span>
+                    إدارة الطلاب
+                </h1>
+                <p className="page-subtitle">إضافة وعرض وحذف الطلاب</p>
             </div>
 
             {/* Add Student Form */}
-            <div className="row mb-4">
-                <div className="col-lg-6">
-                    <div className="card shadow-sm border-0">
-                        <div className="card-body">
-                            <h5 className="card-title mb-3">إضافة طالب جديد</h5>
-                            <form onSubmit={handleAddStudent}>
-                                <div className="input-group">
-                                    <input
-                                        type="text"
-                                        className="form-control form-control-lg"
-                                        placeholder="اسم الطالب"
-                                        value={newStudentName}
-                                        onChange={(e) => setNewStudentName(e.target.value)}
-                                        disabled={submitting}
-                                    />
-                                    <button
-                                        type="submit"
-                                        className="btn btn-primary"
-                                        disabled={submitting}
-                                    >
-                                        {submitting ? (
-                                            <span className="spinner-border spinner-border-sm ms-2" role="status"></span>
-                                        ) : null}
-                                        إضافة
-                                    </button>
-                                </div>
-                            </form>
+            <div className="glass-card" style={{ maxWidth: 560, marginBottom: '1.5rem' }}>
+                <div className="card-header-custom">
+                    <MdPersonAdd size={18} color="#FFB800" />
+                    إضافة طالب جديد
+                </div>
+                <div className="card-body-custom">
+                    <form onSubmit={handleAddStudent}>
+                        <div className="input-group-custom">
+                            <input
+                                type="text"
+                                className="form-control-custom form-control-lg-custom"
+                                placeholder="اسم الطالب"
+                                value={newStudentName}
+                                onChange={(e) => setNewStudentName(e.target.value)}
+                                disabled={submitting}
+                            />
+                            <button type="submit" className="btn-primary-custom lg" disabled={submitting}>
+                                {submitting
+                                    ? <div className="loading-spinner" style={{ width: 16, height: 16, borderWidth: 2, borderTopColor: '#0B1221' }} />
+                                    : <><MdPersonAdd size={16} /> إضافة</>
+                                }
+                            </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
 
-            {/* Students List */}
-            <div className="row">
-                <div className="col">
-                    <div className="card shadow-sm border-0">
-                        <div className="card-body">
-                            <h5 className="card-title mb-3">
-                                قائمة الطلاب ({students.length})
-                            </h5>
-
-                            {students.length === 0 ? (
-                                <div className="alert alert-info text-center" role="alert">
-                                    لا يوجد طلاب حالياً. قم بإضافة طالب جديد للبدء!
-                                </div>
-                            ) : (
-                                <div className="table-responsive">
-                                    <table className="table table-hover align-middle">
-                                        <thead className="table-light">
-                                            <tr>
-                                                <th style={{ width: '60px' }}>#</th>
-                                                <th>اسم الطالب</th>
-                                                <th style={{ width: '200px' }}>تاريخ التسجيل</th>
-                                                <th style={{ width: '120px' }} className="text-center">الإجراءات</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {students.map((student, index) => (
-                                                <tr key={student.id}>
-                                                    <td className="text-muted">{index + 1}</td>
-                                                    <td className="fw-semibold">{student.name}</td>
-                                                    <td className="text-muted">
-                                                        {new Date(student.created_at).toLocaleDateString('ar-EG')}
-                                                    </td>
-                                                    <td className="text-center">
-                                                        <button
-                                                            className="btn btn-danger btn-sm"
-                                                            onClick={() => handleDeleteStudent(student.id, student.name)}
-                                                        >
-                                                            🗑️ حذف
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
+            {/* Students Table */}
+            <div className="glass-card">
+                <div className="card-header-custom">
+                    <MdPeople size={18} color="#FFB800" />
+                    قائمة الطلاب
+                    <span className="badge-custom badge-gold" style={{ marginRight: 'auto' }}>{students.length}</span>
+                </div>
+                <div className="card-body-custom" style={{ padding: 0 }}>
+                    {students.length === 0 ? (
+                        <div className="empty-state">
+                            <div className="empty-state-icon"><MdPeople size={30} /></div>
+                            <p className="empty-state-title">لا يوجد طلاب حالياً</p>
+                            <p className="empty-state-sub">قم بإضافة طالب جديد للبدء</p>
                         </div>
-                    </div>
+                    ) : (
+                        <div style={{ overflowX: 'auto' }}>
+                            <table className="table-custom">
+                                <thead>
+                                    <tr>
+                                        <th style={{ width: 55 }}>#</th>
+                                        <th>اسم الطالب</th>
+                                        <th><MdCalendarToday size={13} style={{ verticalAlign: 'middle', marginLeft: 4 }} />تاريخ التسجيل</th>
+                                        <th style={{ width: 100, textAlign: 'center' }}>الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {students.map((student, index) => (
+                                        <tr key={student.id}>
+                                            <td className="text-slate">{index + 1}</td>
+                                            <td className="fw-600">{student.name}</td>
+                                            <td className="text-slate fs-sm">
+                                                {new Date(student.created_at).toLocaleDateString('ar-EG')}
+                                            </td>
+                                            <td style={{ textAlign: 'center' }}>
+                                                <button
+                                                    className="btn-danger-custom"
+                                                    onClick={() => handleDeleteStudent(student.id, student.name)}
+                                                >
+                                                    <MdDeleteOutline size={15} />
+                                                    حذف
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

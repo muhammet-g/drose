@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import Swal from 'sweetalert2'
+import { MdBarChart, MdPerson, MdCalendarMonth, MdDeleteSweep, MdRefresh, MdCheckCircle, MdCancel, MdSchedule, MdNotes } from 'react-icons/md'
 
 const STATUS_INFO = {
     present: { text: 'حاضر', color: '#198754', textColor: '#fff', icon: '✅' },
@@ -182,193 +183,177 @@ function MonthlyReport() {
 
     /* ── render ── */
     return (
-        <div className="container" dir="rtl">
-            {/* ── Header ── */}
-            <div className="row mb-4">
-                <div className="col">
-                    <h1 className="display-5 fw-bold text-primary">📅 السجل الشهري</h1>
-                    <p className="lead text-muted">عرض سجل الحضور والغياب الشهري لكل طالب</p>
-                </div>
+        <div className="page-content fade-in" dir="rtl">
+            {/* Header */}
+            <div className="page-header">
+                <h1 className="page-title">
+                    <span className="page-title-icon"><MdBarChart size={22} /></span>
+                    السجل الشهري
+                </h1>
+                <p className="page-subtitle">عرض سجل الحضور والغياب الشهري لكل طالب</p>
             </div>
 
-            {/* ── Controls row ── */}
-            <div className="row mb-4 g-3 align-items-stretch">
+            {/* Controls */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
                 {/* Student selector */}
-                <div className="col-md-4">
-                    <div className="card shadow-sm border-0 h-100">
-                        <div className="card-body">
-                            <label className="form-label fw-semibold">👤 اختر الطالب</label>
-                            {studentsLoading ? (
-                                <div className="d-flex align-items-center gap-2">
-                                    <div className="spinner-border spinner-border-sm text-primary" role="status"></div>
-                                    <span className="text-muted">جاري التحميل...</span>
-                                </div>
-                            ) : (
-                                <select
-                                    className="form-select form-select-lg"
-                                    value={selectedStudent}
-                                    onChange={e => setSelectedStudent(e.target.value)}
-                                >
-                                    <option value="">-- اختر طالباً --</option>
-                                    {students.map(s => (
-                                        <option key={s.id} value={s.id}>{s.name}</option>
-                                    ))}
-                                </select>
-                            )}
-                        </div>
+                <div className="glass-card">
+                    <div className="card-header-custom">
+                        <MdPerson size={16} color="#FFB800" />
+                        اختر الطالب
+                    </div>
+                    <div className="card-body-custom">
+                        {studentsLoading ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#94A3B8', fontSize: '0.85rem' }}>
+                                <div className="loading-spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />
+                                جاري التحميل...
+                            </div>
+                        ) : (
+                            <select
+                                className="form-control-custom form-select-custom form-control-lg-custom"
+                                value={selectedStudent}
+                                onChange={e => setSelectedStudent(e.target.value)}
+                            >
+                                <option value="">-- اختر طالباً --</option>
+                                {students.map(s => (
+                                    <option key={s.id} value={s.id}>{s.name}</option>
+                                ))}
+                            </select>
+                        )}
                     </div>
                 </div>
 
                 {/* Month picker */}
-                <div className="col-md-4">
-                    <div className="card shadow-sm border-0 h-100">
-                        <div className="card-body">
-                            <label className="form-label fw-semibold">📆 اختر الشهر</label>
-                            <input
-                                type="month"
-                                className="form-control form-control-lg"
-                                value={selectedMonth}
-                                onChange={e => setSelectedMonth(e.target.value)}
-                            />
-                        </div>
+                <div className="glass-card">
+                    <div className="card-header-custom">
+                        <MdCalendarMonth size={16} color="#FFB800" />
+                        اختر الشهر
+                    </div>
+                    <div className="card-body-custom">
+                        <input
+                            type="month"
+                            className="form-control-custom form-control-lg-custom"
+                            value={selectedMonth}
+                            onChange={e => setSelectedMonth(e.target.value)}
+                        />
                     </div>
                 </div>
 
                 {/* Reset buttons */}
-                <div className="col-md-4">
-                    <div className="card shadow-sm border-0 h-100">
-                        <div className="card-body d-flex flex-column justify-content-center gap-2">
-                            <button className="btn btn-danger" onClick={handleResetAll}>
-                                🗑️ تصفير سجلات جميع الطلاب
-                            </button>
-                            <button
-                                className="btn btn-warning"
-                                onClick={handleResetStudent}
-                                disabled={!selectedStudent}
-                            >
-                                🔄 تصفير سجلات الطالب المختار
-                            </button>
-                        </div>
+                <div className="glass-card">
+                    <div className="card-header-custom">
+                        <MdDeleteSweep size={16} color="#EF4444" />
+                        <span style={{ color: '#EF4444' }}>إعادة تعيين</span>
+                    </div>
+                    <div className="card-body-custom" style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                        <button className="btn-danger-custom" style={{ justifyContent: 'center' }} onClick={handleResetAll}>
+                            <MdDeleteSweep size={15} />
+                            تصفير سجلات جميع الطلاب
+                        </button>
+                        <button
+                            className="btn-warning-custom"
+                            style={{ justifyContent: 'center' }}
+                            onClick={handleResetStudent}
+                            disabled={!selectedStudent}
+                        >
+                            <MdRefresh size={15} />
+                            تصفير سجلات الطالب المختار
+                        </button>
                     </div>
                 </div>
             </div>
 
-            {/* ── Stats ── */}
+            {/* Stats */}
             {stats && (
-                <div className="row mb-4">
-                    <div className="col">
-                        <div className="card shadow-sm border-0" style={{ background: 'linear-gradient(135deg,#f8f9fa,#e9ecef)' }}>
-                            <div className="card-body py-3">
-                                <h6 className="card-title mb-3 fw-semibold">
-                                    📊 إحصائيات {studentName} — {monthLabel}
-                                </h6>
-                                <div className="row text-center g-2">
-                                    {[
-                                        { label: 'الإجمالي', val: stats.total, cls: 'text-dark' },
-                                        { label: 'حاضر', val: stats.present, cls: 'text-success' },
-                                        { label: 'غائب', val: stats.absent, cls: 'text-danger' },
-                                        { label: 'بعذر', val: stats.excused, cls: 'text-warning' },
-                                        { label: 'مؤجل', val: stats.postponed, cls: 'text-secondary' },
-                                    ].map(({ label, val, cls }) => (
-                                        <div key={label} className="col">
-                                            <div className={`h3 mb-0 fw-bold ${cls}`}>{val}</div>
-                                            <small className="text-muted">{label}</small>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                <div className="grid-4" style={{ marginBottom: '1.5rem' }}>
+                    <div className="stat-card">
+                        <div className="stat-icon-wrap gold"><MdNotes size={22} color="#FFB800" /></div>
+                        <div className="stat-value">{stats.total}</div>
+                        <div className="stat-label">الإجمالي</div>
+                    </div>
+                    <div className="stat-card success">
+                        <div className="stat-icon-wrap green"><MdCheckCircle size={22} color="#10B981" /></div>
+                        <div className="stat-value text-success-c">{stats.present}</div>
+                        <div className="stat-label">حاضر</div>
+                    </div>
+                    <div className="stat-card error">
+                        <div className="stat-icon-wrap red"><MdCancel size={22} color="#EF4444" /></div>
+                        <div className="stat-value text-error-c">{stats.absent}</div>
+                        <div className="stat-label">غائب</div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="stat-icon-wrap orange"><MdSchedule size={22} color="#F59E0B" /></div>
+                        <div className="stat-value text-warning-c">{stats.excused + stats.postponed}</div>
+                        <div className="stat-label">بعذر / مؤجل</div>
                     </div>
                 </div>
             )}
 
-            {/* ── Grid ── */}
+            {/* Calendar Grid */}
             {selectedStudent && selectedMonth ? (
-                <div className="row">
-                    <div className="col">
-                        <div className="card shadow-sm border-0">
-                            <div className="card-body">
-                                <h5 className="card-title mb-1 fw-semibold">
-                                    السجل الشهري
-                                    <span className="text-muted fw-normal"> — {studentName} | {monthLabel}</span>
-                                </h5>
-
-                                {/* Legend */}
-                                <div className="d-flex flex-wrap gap-3 mb-4 mt-2">
-                                    {Object.entries(STATUS_INFO).map(([key, info]) => (
-                                        <div key={key} className="d-flex align-items-center gap-2">
-                                            <div style={{
-                                                width: 18, height: 18, borderRadius: 4,
-                                                backgroundColor: info.color,
-                                                border: '1px solid rgba(0,0,0,.12)',
-                                                flexShrink: 0
-                                            }} />
-                                            <small className="text-muted">{info.text}</small>
-                                        </div>
-                                    ))}
+                <div className="glass-card">
+                    <div className="card-header-custom">
+                        <MdBarChart size={18} color="#FFB800" />
+                        السجل الشهري
+                        <span className="text-slate" style={{ fontWeight: 400, marginRight: '0.25rem', fontSize: '0.88rem' }}>
+                            — {studentName} | {monthLabel}
+                        </span>
+                    </div>
+                    <div className="card-body-custom">
+                        {/* Legend */}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                            {Object.entries(STATUS_INFO).map(([key, info]) => (
+                                <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                    <div style={{ width: 14, height: 14, borderRadius: 4, backgroundColor: info.color, flexShrink: 0, border: '1px solid rgba(255,255,255,0.1)' }} />
+                                    <span style={{ fontSize: '0.78rem', color: '#94A3B8' }}>{info.text}</span>
                                 </div>
-
-                                {loading ? (
-                                    <div className="text-center py-5">
-                                        <div className="spinner-border text-primary" role="status">
-                                            <span className="visually-hidden">جاري التحميل...</span>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div style={{ overflowX: 'auto' }}>
-                                        <div style={{
-                                            display: 'grid',
-                                            gridTemplateColumns: 'repeat(7, minmax(70px, 1fr))',
-                                            gap: '8px',
-                                            minWidth: '500px'
-                                        }}>
-                                            {days.map(day => {
-                                                const status = getStatusForDay(day)
-                                                const info = STATUS_INFO[status]
-                                                return (
-                                                    <div
-                                                        key={day}
-                                                        style={{
-                                                            backgroundColor: info.color,
-                                                            color: info.textColor,
-                                                            borderRadius: '10px',
-                                                            padding: '10px 6px',
-                                                            textAlign: 'center',
-                                                            border: '1px solid rgba(0,0,0,.08)',
-                                                            minHeight: '80px',
-                                                            display: 'flex',
-                                                            flexDirection: 'column',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            gap: '3px',
-                                                            boxShadow: '0 1px 3px rgba(0,0,0,.08)',
-                                                            transition: 'transform .15s',
-                                                            cursor: 'default'
-                                                        }}
-                                                        title={`يوم ${day}: ${info.text}`}
-                                                    >
-                                                        <div style={{ fontSize: '11px', opacity: 0.75, fontWeight: 500 }}>
-                                                            {getDayLabel(day)}
-                                                        </div>
-                                                        <div style={{ fontSize: '22px', fontWeight: 'bold', lineHeight: 1.1 }}>
-                                                            {day}
-                                                        </div>
-                                                        <div style={{ fontSize: '16px', lineHeight: 1 }}>
-                                                            {info.icon}
-                                                        </div>
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                            ))}
                         </div>
+
+                        {loading ? (
+                            <div className="empty-state">
+                                <div className="loading-spinner" />
+                            </div>
+                        ) : (
+                            <div style={{ overflowX: 'auto' }}>
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(7, minmax(72px, 1fr))',
+                                    gap: '8px',
+                                    minWidth: 520
+                                }}>
+                                    {days.map(day => {
+                                        const status = getStatusForDay(day)
+                                        const info = STATUS_INFO[status]
+                                        return (
+                                            <div
+                                                key={day}
+                                                className="calendar-day"
+                                                style={{
+                                                    backgroundColor: info.color,
+                                                    color: info.textColor,
+                                                    border: '1px solid rgba(255,255,255,0.06)',
+                                                    minHeight: 80,
+                                                    padding: '8px 4px'
+                                                }}
+                                                title={`يوم ${day}: ${info.text}`}
+                                            >
+                                                <div style={{ fontSize: '0.68rem', opacity: 0.75 }}>{getDayLabel(day)}</div>
+                                                <div style={{ fontSize: '1.35rem', fontWeight: 700, lineHeight: 1.1 }}>{day}</div>
+                                                <div style={{ fontSize: '0.95rem' }}>{info.icon}</div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             ) : (
-                <div className="alert alert-info text-center fs-5" role="alert">
-                    👆 يرجى اختيار طالب لعرض السجل الشهري
+                <div className="glass-card">
+                    <div className="empty-state" style={{ padding: '3rem 1rem' }}>
+                        <div className="empty-state-icon"><MdBarChart size={30} /></div>
+                        <p className="empty-state-title">يرجى اختيار طالب لعرض السجل الشهري</p>
+                    </div>
                 </div>
             )}
         </div>
