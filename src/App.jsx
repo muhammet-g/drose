@@ -5,6 +5,7 @@ import Students from './pages/Students'
 import Schedule from './pages/Schedule'
 import DailyClasses from './pages/DailyClasses'
 import Attendance from './pages/Attendance'
+import MonthlyReport from './pages/MonthlyReport'
 import Login from './pages/Login'
 import Swal from 'sweetalert2'
 
@@ -107,6 +108,11 @@ function MainLayout({ children }) {
                                     الحضور والسجلات
                                 </Link>
                             </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/monthly-report">
+                                    📅 السجل الشهري
+                                </Link>
+                            </li>
                         </ul>
                         {/* User Info & Sign Out */}
                         <div className="d-flex align-items-center">
@@ -191,6 +197,16 @@ function AppContent() {
                     <ProtectedRoute>
                         <MainLayout>
                             <Attendance />
+                        </MainLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/monthly-report"
+                element={
+                    <ProtectedRoute>
+                        <MainLayout>
+                            <MonthlyReport />
                         </MainLayout>
                     </ProtectedRoute>
                 }
