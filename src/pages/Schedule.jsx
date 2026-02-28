@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
-import Swal from 'sweetalert2'
+import Swal from '../lib/swal'
 import { MdCalendarMonth, MdAdd, MdDeleteOutline, MdSchedule, MdPeople, MdAccessTime, MdWarning } from 'react-icons/md'
-
-const swalTheme = { background: '#111827', color: '#E2E8F0' }
 
 function Schedule() {
     const [students, setStudents] = useState([])
@@ -58,12 +56,7 @@ function Schedule() {
             setSchedules(schedulesData || [])
         } catch (error) {
             console.error('Error fetching data:', error)
-            Swal.fire({
-                icon: 'error',
-                title: 'خطأ',
-                text: 'حدث خطأ أثناء تحميل البيانات',
-                confirmButtonText: 'حسناً'
-            })
+            Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء تحميل البيانات', confirmButtonText: 'حسناً' })
         } finally {
             setLoading(false)
         }
@@ -105,23 +98,13 @@ function Schedule() {
 
         // Validation
         if (!formData.studentId || !formData.dayOfWeek || !formData.startTime || !formData.endTime) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'تنبيه',
-                text: 'الرجاء ملء جميع الحقول',
-                confirmButtonText: 'حسناً'
-            })
+            Swal.fire({ icon: 'warning', title: 'تنبيه', text: 'الرجاء ملء جميع الحقول', confirmButtonText: 'حسناً' })
             return
         }
 
         // Validate time range
         if (formData.startTime >= formData.endTime) {
-            Swal.fire({
-                icon: 'error',
-                title: 'خطأ في الوقت',
-                text: 'وقت البداية يجب أن يكون قبل وقت النهاية',
-                confirmButtonText: 'حسناً'
-            })
+            Swal.fire({ icon: 'error', title: 'خطأ في الوقت', text: 'وقت البداية يجب أن يكون قبل وقت النهاية', confirmButtonText: 'حسناً' })
             return
         }
 
@@ -143,19 +126,18 @@ function Schedule() {
                     icon: 'error',
                     title: '⚠️ تعارض في المواعيد',
                     html: `
-            <div class="text-end">
+            <div class="text-end" style="color:#E2E8F0;">
               <p><strong>يوجد تعارض مع حصة أخرى:</strong></p>
-              <ul class="list-unstyled mt-3">
+              <ul style="list-style:none;margin-top:0.75rem;padding:0;">
                 <li>📚 الطالب: <strong>${conflict.students.name}</strong></li>
                 <li>📅 اليوم: <strong>${dayName}</strong></li>
                 <li>🕐 من: <strong>${conflict.start_time}</strong></li>
                 <li>🕑 إلى: <strong>${conflict.end_time}</strong></li>
               </ul>
-              <p class="mt-3 text-danger">الرجاء اختيار وقت آخر</p>
+              <p style="margin-top:0.75rem;color:#EF4444;">الرجاء اختيار وقت آخر</p>
             </div>
           `,
-                    confirmButtonText: 'حسناً',
-                    confirmButtonColor: '#d33'
+                    confirmButtonText: 'حسناً'
                 })
                 setSubmitting(false)
                 return
@@ -173,13 +155,7 @@ function Schedule() {
 
             if (error) throw error
 
-            Swal.fire({
-                icon: 'success',
-                title: 'تم بنجاح',
-                text: 'تمت إضافة الحصة إلى الجدول',
-                timer: 1500,
-                showConfirmButton: false
-            })
+            Swal.fire({ icon: 'success', title: 'تم بنجاح', text: 'تمت إضافة الحصة إلى الجدول', timer: 1500, showConfirmButton: false })
 
             // Reset form
             setFormData({
@@ -192,12 +168,7 @@ function Schedule() {
             fetchData()
         } catch (error) {
             console.error('Error adding schedule:', error)
-            Swal.fire({
-                icon: 'error',
-                title: 'خطأ',
-                text: 'حدث خطأ أثناء إضافة الحصة',
-                confirmButtonText: 'حسناً'
-            })
+            Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء إضافة الحصة', confirmButtonText: 'حسناً' })
         } finally {
             setSubmitting(false)
         }
@@ -209,8 +180,6 @@ function Schedule() {
             text: 'سيتم حذف هذه الحصة من الجدول',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
             confirmButtonText: 'نعم، احذف',
             cancelButtonText: 'إلغاء'
         })
@@ -224,23 +193,12 @@ function Schedule() {
 
                 if (error) throw error
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'تم الحذف',
-                    text: 'تم حذف الحصة بنجاح',
-                    timer: 1500,
-                    showConfirmButton: false
-                })
+                Swal.fire({ icon: 'success', title: 'تم الحذف', text: 'تم حذف الحصة بنجاح', timer: 1500, showConfirmButton: false })
 
                 fetchData()
             } catch (error) {
                 console.error('Error deleting schedule:', error)
-                Swal.fire({
-                    icon: 'error',
-                    title: 'خطأ',
-                    text: 'حدث خطأ أثناء حذف الحصة',
-                    confirmButtonText: 'حسناً'
-                })
+                Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء حذف الحصة', confirmButtonText: 'حسناً' })
             }
         }
     }

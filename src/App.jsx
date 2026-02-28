@@ -8,7 +8,7 @@ import DailyClasses from './pages/DailyClasses'
 import Attendance from './pages/Attendance'
 import MonthlyReport from './pages/MonthlyReport'
 import Login from './pages/Login'
-import Swal from 'sweetalert2'
+import Swal from './lib/swal'
 import {
     MdDashboard, MdPeople, MdCalendarMonth, MdToday,
     MdAssignment, MdBarChart, MdLogout, MdMenu, MdClose,
@@ -60,26 +60,14 @@ function MainLayout({ children }) {
             title: 'هل أنت متأكد؟',
             text: 'هل تريد تسجيل الخروج؟',
             icon: 'question',
-            background: '#111827',
-            color: '#E2E8F0',
             showCancelButton: true,
-            confirmButtonColor: '#EF4444',
-            cancelButtonColor: '#1E293B',
             confirmButtonText: 'نعم، تسجيل الخروج',
             cancelButtonText: 'إلغاء'
         })
 
         if (result.isConfirmed) {
             await signOut()
-            Swal.fire({
-                icon: 'success',
-                title: 'تم تسجيل الخروج',
-                text: 'تم تسجيل الخروج بنجاح',
-                timer: 1500,
-                showConfirmButton: false,
-                background: '#111827',
-                color: '#E2E8F0'
-            })
+            Swal.fire({ icon: 'success', title: 'تم تسجيل الخروج', text: 'تم تسجيل الخروج بنجاح', timer: 1500, showConfirmButton: false })
         }
     }
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
-import Swal from 'sweetalert2'
+import Swal from '../lib/swal'
 import { MdToday, MdCalendarToday, MdAccessTime, MdPerson, MdCheckCircle } from 'react-icons/md'
 
 function DailyClasses() {
@@ -76,12 +76,7 @@ function DailyClasses() {
             }
 
             if (existingData) {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'تم التسجيل مسبقاً',
-                    text: `تم تسجيل الحضور لـ ${studentName} في هذا التاريخ. استخدم صفحة "الحضور والسجلات" للتعديل.`,
-                    confirmButtonText: 'حسناً'
-                })
+                Swal.fire({ icon: 'info', title: 'تم التسجيل مسبقاً', text: `تم تسجيل الحضور لـ ${studentName} في هذا التاريخ. استخدم صفحة "الحضور والسجلات" للتعديل.`, confirmButtonText: 'حسناً' })
                 return
             }
 
@@ -103,21 +98,10 @@ function DailyClasses() {
                 'postponed': 'مؤجل'
             }[status]
 
-            Swal.fire({
-                icon: 'success',
-                title: 'تم التسجيل',
-                text: `تم تسجيل ${studentName} كـ ${statusText}`,
-                timer: 1500,
-                showConfirmButton: false
-            })
+            Swal.fire({ icon: 'success', title: 'تم التسجيل', text: `تم تسجيل ${studentName} كـ ${statusText}`, timer: 1500, showConfirmButton: false })
         } catch (error) {
             console.error('Error marking attendance:', error)
-            Swal.fire({
-                icon: 'error',
-                title: 'خطأ',
-                text: 'حدث خطأ أثناء تسجيل الحضور',
-                confirmButtonText: 'حسناً'
-            })
+            Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء تسجيل الحضور', confirmButtonText: 'حسناً' })
         }
     }
 
@@ -130,11 +114,8 @@ function DailyClasses() {
             showCloseButton: true,
             confirmButtonText: '✅ حاضر',
             denyButtonText: '❌ غائب',
-            cancelButtonText: '📝 غياب بعذر',
-            confirmButtonColor: '#198754',
-            denyButtonColor: '#dc3545',
-            cancelButtonColor: '#ffc107',
-            footer: '<button id="postponed-btn" class="btn btn-secondary btn-sm">⏰ مؤجل</button>'
+            cancelButtonText: '📝 بعذر',
+            footer: '<button id="postponed-btn" style="background:rgba(100,116,139,0.15);border:1px solid rgba(100,116,139,0.35);border-radius:6px;color:#94A3B8;padding:0.35rem 0.9rem;cursor:pointer;font-size:0.85rem;">⏰ مؤجل</button>'
         }).then((result) => {
             if (result.isConfirmed) {
                 handleMarkAttendance(studentId, studentName, 'present')

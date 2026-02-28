@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
-import Swal from 'sweetalert2'
+import Swal from '../lib/swal'
 import { MdAssignment, MdCalendarToday, MdEditNote, MdDeleteOutline, MdCheckCircle, MdCancel, MdSchedule, MdNotes } from 'react-icons/md'
-
-const swalTheme = { background: '#111827', color: '#E2E8F0' }
 
 function Attendance() {
     const [attendanceRecords, setAttendanceRecords] = useState([])
@@ -76,9 +74,7 @@ function Attendance() {
             confirmButtonText: 'تحديث',
             cancelButtonText: 'إلغاء',
             inputValidator: (value) => {
-                if (!value) {
-                    return 'يجب اختيار حالة'
-                }
+                if (!value) return 'يجب اختيار حالة'
             }
         })
 
@@ -91,23 +87,12 @@ function Attendance() {
 
                 if (error) throw error
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'تم التحديث',
-                    text: 'تم تحديث حالة الحضور بنجاح',
-                    timer: 1500,
-                    showConfirmButton: false
-                })
+                Swal.fire({ icon: 'success', title: 'تم التحديث', text: 'تم تحديث حالة الحضور بنجاح', timer: 1500, showConfirmButton: false })
 
                 fetchAttendance()
             } catch (error) {
                 console.error('Error updating status:', error)
-                Swal.fire({
-                    icon: 'error',
-                    title: 'خطأ',
-                    text: 'حدث خطأ أثناء تحديث الحالة',
-                    confirmButtonText: 'حسناً'
-                })
+                Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء تحديث الحالة', confirmButtonText: 'حسناً' })
             }
         }
     }
@@ -118,8 +103,6 @@ function Attendance() {
             text: `سيتم حذف سجل الحضور لـ "${studentName}"`,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
             confirmButtonText: 'نعم، احذف',
             cancelButtonText: 'إلغاء'
         })
@@ -133,23 +116,12 @@ function Attendance() {
 
                 if (error) throw error
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'تم الحذف',
-                    text: 'تم حذف السجل بنجاح',
-                    timer: 1500,
-                    showConfirmButton: false
-                })
+                Swal.fire({ icon: 'success', title: 'تم الحذف', text: 'تم حذف السجل بنجاح', timer: 1500, showConfirmButton: false })
 
                 fetchAttendance()
             } catch (error) {
                 console.error('Error deleting record:', error)
-                Swal.fire({
-                    icon: 'error',
-                    title: 'خطأ',
-                    text: 'حدث خطأ أثناء حذف السجل',
-                    confirmButtonText: 'حسناً'
-                })
+                Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء حذف السجل', confirmButtonText: 'حسناً' })
             }
         }
     }

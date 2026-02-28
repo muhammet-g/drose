@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
-import Swal from 'sweetalert2'
+import Swal from '../lib/swal'
 import { MdPeople, MdToday, MdCheckCircle, MdPersonAdd, MdCalendarMonth, MdMenuBook, MdAssignment, MdBarChart } from 'react-icons/md'
 import { Link } from 'react-router-dom'
 

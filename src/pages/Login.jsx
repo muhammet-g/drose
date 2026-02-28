@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import Swal from 'sweetalert2'
+import Swal from '../lib/swal'
 import { MdEmail, MdLock, MdLogin, MdPersonAdd, MdMenuBook, MdInfoOutline } from 'react-icons/md'
-
-const swalTheme = { background: '#111827', color: '#E2E8F0' }
 
 function Login() {
     const [email, setEmail] = useState('')
@@ -18,12 +16,12 @@ function Login() {
         e.preventDefault()
 
         if (!email || !password) {
-            Swal.fire({ ...swalTheme, icon: 'warning', title: 'تنبيه', text: 'الرجاء إدخال البريد الإلكتروني وكلمة المرور', confirmButtonText: 'حسناً' })
+            Swal.fire({ icon: 'warning', title: 'تنبيه', text: 'الرجاء إدخال البريد الإلكتروني وكلمة المرور', confirmButtonText: 'حسناً' })
             return
         }
 
         if (password.length < 6) {
-            Swal.fire({ ...swalTheme, icon: 'warning', title: 'تنبيه', text: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', confirmButtonText: 'حسناً' })
+            Swal.fire({ icon: 'warning', title: 'تنبيه', text: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل', confirmButtonText: 'حسناً' })
             return
         }
 
@@ -36,10 +34,10 @@ function Login() {
                     const msg = error.message.includes('already registered')
                         ? 'هذا البريد الإلكتروني مسجل مسبقاً'
                         : error.message
-                    Swal.fire({ ...swalTheme, icon: 'error', title: 'خطأ', text: msg, confirmButtonText: 'حسناً' })
+                    Swal.fire({ icon: 'error', title: 'خطأ', text: msg, confirmButtonText: 'حسناً' })
                     return
                 }
-                Swal.fire({ ...swalTheme, icon: 'success', title: 'تم التسجيل بنجاح', text: 'تم إنشاء الحساب. يرجى تسجيل الدخول الآن.', confirmButtonText: 'حسناً' })
+                Swal.fire({ icon: 'success', title: 'تم التسجيل بنجاح', text: 'تم إنشاء الحساب. يرجى تسجيل الدخول الآن.', confirmButtonText: 'حسناً' })
                     .then(() => { setIsSignUp(false) })
             } else {
                 const { data, error } = await signIn(email, password)
@@ -47,14 +45,14 @@ function Login() {
                     const msg = error.message.includes('Invalid login credentials')
                         ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
                         : error.message
-                    Swal.fire({ ...swalTheme, icon: 'error', title: 'خطأ', text: msg, confirmButtonText: 'حسناً' })
+                    Swal.fire({ icon: 'error', title: 'خطأ', text: msg, confirmButtonText: 'حسناً' })
                     return
                 }
                 navigate('/')
             }
         } catch (error) {
             console.error('Authentication error:', error)
-            Swal.fire({ ...swalTheme, icon: 'error', title: 'خطأ', text: 'حدث خطأ غير متوقع', confirmButtonText: 'حسناً' })
+            Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ غير متوقع', confirmButtonText: 'حسناً' })
         } finally {
             setLoading(false)
         }

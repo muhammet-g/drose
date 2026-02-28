@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
-import Swal from 'sweetalert2'
+import Swal from '../lib/swal'
 import { MdBarChart, MdPerson, MdCalendarMonth, MdDeleteSweep, MdRefresh, MdCheckCircle, MdCancel, MdSchedule, MdNotes } from 'react-icons/md'
 
 const STATUS_INFO = {
@@ -87,8 +87,6 @@ function MonthlyReport() {
             text: 'سيتم حذف جميع سجلات الحضور لجميع الطلاب نهائياً. هل أنت متأكد؟',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
             confirmButtonText: 'نعم، تصفير الكل',
             cancelButtonText: 'إلغاء'
         })
@@ -122,8 +120,6 @@ function MonthlyReport() {
             text: 'سيتم حذف جميع سجلات الحضور لهذا الطالب نهائياً. هل أنت متأكد؟',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
             confirmButtonText: 'نعم، تصفير',
             cancelButtonText: 'إلغاء'
         })

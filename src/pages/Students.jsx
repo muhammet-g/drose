@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
-import Swal from 'sweetalert2'
+import Swal from '../lib/swal'
 import { MdPeople, MdPersonAdd, MdDeleteOutline, MdCalendarToday } from 'react-icons/md'
-
-const swalTheme = { background: '#111827', color: '#E2E8F0' }
 
 function Students() {
     const [students, setStudents] = useState([])
@@ -68,8 +66,6 @@ function Students() {
             text: `سيتم حذف الطالب "${studentName}" وجميع البيانات المرتبطة به (الجداول والحضور)`,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
             confirmButtonText: 'نعم، احذف',
             cancelButtonText: 'إلغاء'
         })
@@ -83,23 +79,12 @@ function Students() {
 
                 if (error) throw error
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'تم الحذف',
-                    text: 'تم حذف الطالب بنجاح',
-                    timer: 1500,
-                    showConfirmButton: false
-                })
+                Swal.fire({ icon: 'success', title: 'تم الحذف', text: 'تم حذف الطالب بنجاح', timer: 1500, showConfirmButton: false })
 
                 fetchStudents()
             } catch (error) {
                 console.error('Error deleting student:', error)
-                Swal.fire({
-                    icon: 'error',
-                    title: 'خطأ',
-                    text: 'حدث خطأ أثناء حذف الطالب',
-                    confirmButtonText: 'حسناً'
-                })
+                Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء حذف الطالب', confirmButtonText: 'حسناً' })
             }
         }
     }
