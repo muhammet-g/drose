@@ -177,7 +177,7 @@ function Schedule() {
                     }])
 
                 if (insertError) throw insertError
-                
+
                 Swal.fire({ icon: 'success', title: 'تم التعديل', text: 'تم تحديث الحصة بنجاح', timer: 1500, showConfirmButton: false })
             } else {
                 // No conflict - proceed with insertion
@@ -229,7 +229,7 @@ function Schedule() {
             try {
                 // Get today's date formatted as YYYY-MM-DD
                 const today = new Date().toISOString().split('T')[0]
-                
+
                 const { error } = await supabase
                     .from('schedules')
                     .update({ valid_until: today })

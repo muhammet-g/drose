@@ -44,7 +44,7 @@ function DailyClasses() {
         `)
                 .eq('day_of_week', dayOfWeek)
                 .lte('valid_from', selectedDate)
-                .or(`valid_until.is.null,valid_until.gte.${selectedDate}`)
+                .or(`valid_until.is.null,valid_until.gt.${selectedDate}`)
                 .order('start_time')
 
             if (error) throw error
