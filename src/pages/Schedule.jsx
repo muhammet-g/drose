@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import Swal from '../lib/swal'
-import { MdCalendarMonth, MdAdd, MdDeleteOutline, MdSchedule, MdPeople, MdAccessTime, MdWarning } from 'react-icons/md'
+import { MdCalendarMonth, MdAdd, MdEdit, MdClose, MdDeleteOutline, MdSchedule, MdPeople, MdAccessTime, MdWarning } from 'react-icons/md'
 
 function Schedule() {
     const [students, setStudents] = useState([])
     const [schedules, setSchedules] = useState([])
     const [loading, setLoading] = useState(true)
     const [submitting, setSubmitting] = useState(false)
+    const [isEditing, setIsEditing] = useState(false)
+    const [editId, setEditId] = useState(null)
 
     const [formData, setFormData] = useState({
         studentId: '',
@@ -40,13 +42,14 @@ function Schedule() {
 
             if (studentsError) throw studentsError
 
-            // Fetch schedules with student names
+            // Fetch schedules with student names (only active ones)
             const { data: schedulesData, error: schedulesError } = await supabase
                 .from('schedules')
                 .select(`
           *,
           students (name)
         `)
+                .is('valid_until', null)
                 .order('day_of_week')
                 .order('start_time')
 
@@ -62,13 +65,20 @@ function Schedule() {
         }
     }
 
-    const checkTimeConflict = async (dayOfWeek, startTime, endTime) => {
+    const checkTimeConflict = async (dayOfWeek, startTime, endTime, excludeScheduleId = null) => {
         try {
-            // Fetch all schedules for the selected day
-            const { data, error } = await supabase
+            // Fetch all active schedules for the selected day
+            let query = supabase
                 .from('schedules')
                 .select('*, students(name)')
                 .eq('day_of_week', dayOfWeek)
+                .is('valid_until', null)
+
+            if (excludeScheduleId) {
+                query = query.neq('id', excludeScheduleId)
+            }
+
+            const { data, error } = await query
 
             if (error) throw error
 
@@ -115,7 +125,8 @@ function Schedule() {
             const conflictCheck = await checkTimeConflict(
                 parseInt(formData.dayOfWeek),
                 formData.startTime,
-                formData.endTime
+                formData.endTime,
+                isEditing ? editId : null
             )
 
             if (conflictCheck.hasConflict) {
@@ -143,19 +154,47 @@ function Schedule() {
                 return
             }
 
-            // No conflict - proceed with insertion
-            const { error } = await supabase
-                .from('schedules')
-                .insert([{
-                    student_id: formData.studentId,
-                    day_of_week: parseInt(formData.dayOfWeek),
-                    start_time: formData.startTime,
-                    end_time: formData.endTime
-                }])
+            const today = new Date().toISOString().split('T')[0]
 
-            if (error) throw error
+            if (isEditing) {
+                // End the current schedule today
+                const { error: updateError } = await supabase
+                    .from('schedules')
+                    .update({ valid_until: today })
+                    .eq('id', editId)
 
-            Swal.fire({ icon: 'success', title: 'تم بنجاح', text: 'تمت إضافة الحصة إلى الجدول', timer: 1500, showConfirmButton: false })
+                if (updateError) throw updateError
+
+                // Insert the new one from today
+                const { error: insertError } = await supabase
+                    .from('schedules')
+                    .insert([{
+                        student_id: formData.studentId,
+                        day_of_week: parseInt(formData.dayOfWeek),
+                        start_time: formData.startTime,
+                        end_time: formData.endTime,
+                        valid_from: today
+                    }])
+
+                if (insertError) throw insertError
+                
+                Swal.fire({ icon: 'success', title: 'تم التعديل', text: 'تم تحديث الحصة بنجاح', timer: 1500, showConfirmButton: false })
+            } else {
+                // No conflict - proceed with insertion
+                const { error } = await supabase
+                    .from('schedules')
+                    .insert([{
+                        student_id: formData.studentId,
+                        day_of_week: parseInt(formData.dayOfWeek),
+                        start_time: formData.startTime,
+                        end_time: formData.endTime,
+                        valid_from: today
+                    }])
+
+                if (error) throw error
+
+                Swal.fire({ icon: 'success', title: 'تم بنجاح', text: 'تمت إضافة الحصة إلى الجدول', timer: 1500, showConfirmButton: false })
+            }
 
             // Reset form
             setFormData({
@@ -164,11 +203,13 @@ function Schedule() {
                 startTime: '',
                 endTime: ''
             })
+            setIsEditing(false)
+            setEditId(null)
 
             fetchData()
         } catch (error) {
-            console.error('Error adding schedule:', error)
-            Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء إضافة الحصة', confirmButtonText: 'حسناً' })
+            console.error('Error adding/updating schedule:', error)
+            Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء حفظ الحصة', confirmButtonText: 'حسناً' })
         } finally {
             setSubmitting(false)
         }
@@ -177,30 +218,56 @@ function Schedule() {
     const handleDelete = async (scheduleId) => {
         const result = await Swal.fire({
             title: 'هل أنت متأكد؟',
-            text: 'سيتم حذف هذه الحصة من الجدول',
+            text: 'سيتم أرشفة هذه الحصة ولن تظهر في الجداول القادمة',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'نعم، احذف',
+            confirmButtonText: 'نعم، إيقاف',
             cancelButtonText: 'إلغاء'
         })
 
         if (result.isConfirmed) {
             try {
+                // Get today's date formatted as YYYY-MM-DD
+                const today = new Date().toISOString().split('T')[0]
+                
                 const { error } = await supabase
                     .from('schedules')
-                    .delete()
+                    .update({ valid_until: today })
                     .eq('id', scheduleId)
 
                 if (error) throw error
 
-                Swal.fire({ icon: 'success', title: 'تم الحذف', text: 'تم حذف الحصة بنجاح', timer: 1500, showConfirmButton: false })
+                Swal.fire({ icon: 'success', title: 'تم الإيقاف', text: 'تم إيقاف الحصة بنجاح', timer: 1500, showConfirmButton: false })
 
                 fetchData()
             } catch (error) {
-                console.error('Error deleting schedule:', error)
-                Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء حذف الحصة', confirmButtonText: 'حسناً' })
+                console.error('Error ending schedule:', error)
+                Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء إيقاف الحصة', confirmButtonText: 'حسناً' })
             }
         }
+    }
+
+    const startEdit = (schedule) => {
+        setIsEditing(true)
+        setEditId(schedule.id)
+        setFormData({
+            studentId: schedule.student_id,
+            dayOfWeek: schedule.day_of_week.toString(),
+            startTime: schedule.start_time.substring(0, 5), // trim seconds
+            endTime: schedule.end_time.substring(0, 5) // trim seconds
+        })
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
+    const cancelEdit = () => {
+        setIsEditing(false)
+        setEditId(null)
+        setFormData({
+            studentId: '',
+            dayOfWeek: '',
+            startTime: '',
+            endTime: ''
+        })
     }
 
     if (loading) {
@@ -225,9 +292,14 @@ function Schedule() {
 
             {/* Add Schedule Form */}
             <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
-                <div className="card-header-custom">
-                    <MdAdd size={18} color="#FFB800" />
-                    إضافة حصة جديدة
+                <div className="card-header-custom" style={isEditing ? { backgroundColor: 'rgba(56,189,248,0.1)', color: '#38BDF8' } : {}}>
+                    {isEditing ? <MdEdit size={18} /> : <MdAdd size={18} color="#FFB800" />}
+                    {isEditing ? 'تعديل الحصة' : 'إضافة حصة جديدة'}
+                    {isEditing && (
+                        <button className="btn-ghost" style={{ marginRight: 'auto', padding: '0.2rem 0.5rem' }} onClick={cancelEdit}>
+                            <MdClose size={16} /> إلغاء
+                        </button>
+                    )}
                 </div>
                 <div className="card-body-custom">
                     {students.length === 0 ? (
@@ -303,11 +375,11 @@ function Schedule() {
                                 </div>
                                 {/* Submit */}
                                 <div style={{ gridColumn: '1 / -1' }}>
-                                    <button type="submit" className="btn-primary-custom full lg" disabled={submitting}>
+                                    <button type="submit" className="btn-primary-custom full lg" disabled={submitting} style={isEditing ? { background: 'linear-gradient(135deg, #38BDF8, #0EA5E9)' } : {}}>
                                         {submitting ? (
                                             <><div className="loading-spinner" style={{ width: 16, height: 16, borderWidth: 2, borderTopColor: '#0B1221' }} /> جاري التحقق من التعارضات...</>
                                         ) : (
-                                            <><MdAdd size={18} /> إضافة إلى الجدول</>
+                                            <>{isEditing ? <MdEdit size={18} /> : <MdAdd size={18} />} {isEditing ? 'حفظ التعديلات' : 'إضافة إلى الجدول'}</>
                                         )}
                                     </button>
                                 </div>
@@ -363,10 +435,14 @@ function Schedule() {
                                                 <td><span className="time-badge"><MdAccessTime size={13} />{schedule.start_time}</span></td>
                                                 <td><span className="time-badge"><MdAccessTime size={13} />{schedule.end_time}</span></td>
                                                 <td className="text-slate fs-sm">{durationText}</td>
-                                                <td style={{ textAlign: 'center' }}>
+                                                <td style={{ textAlign: 'center', display: 'flex', gap: '0.4rem', justifyContent: 'center' }}>
+                                                    <button className="btn-ghost" onClick={() => startEdit(schedule)} style={{ padding: '0.3rem 0.5rem', color: '#38BDF8', borderColor: 'rgba(56,189,248,0.3)' }}>
+                                                        <MdEdit size={15} />
+                                                        تعديل
+                                                    </button>
                                                     <button className="btn-danger-custom" onClick={() => handleDelete(schedule.id)}>
                                                         <MdDeleteOutline size={15} />
-                                                        حذف
+                                                        إيقاف
                                                     </button>
                                                 </td>
                                             </tr>

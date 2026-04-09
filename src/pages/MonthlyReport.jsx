@@ -109,30 +109,38 @@ function MonthlyReport() {
     }
 
     const handleResetStudent = async () => {
-        if (!selectedStudent) {
-            Swal.fire({ icon: 'warning', title: 'تنبيه', text: 'يرجى اختيار طالب أولاً', confirmButtonText: 'حسناً' })
+        if (!selectedStudent || !selectedMonth) {
+            Swal.fire({ icon: 'warning', title: 'تنبيه', text: 'يرجى اختيار طالب وشهر أولاً', confirmButtonText: 'حسناً' })
             return
         }
         const studentName = students.find(s => s.id === selectedStudent)?.name
+        const [year, month] = selectedMonth.split('-')
+        const monthName = MONTH_NAMES[month]
 
         const result = await Swal.fire({
             title: `تصفير سجلات: ${studentName}`,
-            text: 'سيتم حذف جميع سجلات الحضور لهذا الطالب نهائياً. هل أنت متأكد؟',
+            text: `سيتم حذف جميع سجلات الحضور لهذا الطالب في شهر ${monthName} ${year} فقط. هل أنت متأكد؟`,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'نعم، تصفير',
+            confirmButtonText: 'نعم، تصفير سجلات الشهر',
             cancelButtonText: 'إلغاء'
         })
         if (!result.isConfirmed) return
 
         try {
+            const lastDay = new Date(year, month, 0).getDate()
+            const startDate = `${year}-${month}-01`
+            const endDate = `${year}-${month}-${String(lastDay).padStart(2, '0')}`
+
             const { error } = await supabase
                 .from('attendance')
                 .delete()
                 .eq('student_id', selectedStudent)
+                .gte('date', startDate)
+                .lte('date', endDate)
             if (error) throw error
 
-            Swal.fire({ icon: 'success', title: 'تم التصفير', text: `تم حذف جميع سجلات الطالب "${studentName}" بنجاح`, timer: 2000, showConfirmButton: false })
+            Swal.fire({ icon: 'success', title: 'تم التصفير', text: `تم حذف سجلات الطالب "${studentName}" لشهر ${monthName} بنجاح`, timer: 2000, showConfirmButton: false })
             setAttendanceMap({})
         } catch (err) {
             console.error(err)

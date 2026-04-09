@@ -32,7 +32,7 @@ function DailyClasses() {
             const date = new Date(selectedDate + 'T00:00:00')
             const dayOfWeek = date.getDay()
 
-            // Fetch schedules for this day of week
+            // Fetch schedules for this day of week that are valid on the selected date
             const { data, error } = await supabase
                 .from('schedules')
                 .select(`
@@ -43,6 +43,8 @@ function DailyClasses() {
           )
         `)
                 .eq('day_of_week', dayOfWeek)
+                .lte('valid_from', selectedDate)
+                .or(`valid_until.is.null,valid_until.gte.${selectedDate}`)
                 .order('start_time')
 
             if (error) throw error

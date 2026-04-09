@@ -8,15 +8,15 @@ const swal = Swal.mixin({
     cancelButtonColor: '#1E293B',
     denyButtonColor: '#EF4444',
     customClass: {
-        popup:          'swal-dark-popup',
-        title:          'swal-dark-title',
-        htmlContainer:  'swal-dark-html',
-        confirmButton:  'swal-dark-confirm',
-        cancelButton:   'swal-dark-cancel',
-        denyButton:     'swal-dark-deny',
-        input:          'swal-dark-input',
-        footer:         'swal-dark-footer',
-        icon:           'swal-dark-icon',
+        popup: 'swal-dark-popup',
+        title: 'swal-dark-title',
+        htmlContainer: 'swal-dark-html',
+        confirmButton: 'swal-dark-confirm',
+        cancelButton: 'swal-dark-cancel',
+        denyButton: 'swal-dark-deny',
+        input: 'swal-dark-input',
+        footer: 'swal-dark-footer',
+        icon: 'swal-dark-icon',
     }
 })
 
