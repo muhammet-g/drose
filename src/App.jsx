@@ -7,12 +7,13 @@ import Schedule from './pages/Schedule'
 import DailyClasses from './pages/DailyClasses'
 import Attendance from './pages/Attendance'
 import MonthlyReport from './pages/MonthlyReport'
+import MonthlyOverview from './pages/MonthlyOverview'
 import Login from './pages/Login'
 import Swal from './lib/swal'
 import {
     MdDashboard, MdPeople, MdCalendarMonth, MdToday,
     MdAssignment, MdBarChart, MdLogout, MdMenu, MdClose,
-    MdMenuBook
+    MdMenuBook, MdGridView
 } from 'react-icons/md'
 
 // Protected Route Component
@@ -92,6 +93,7 @@ function MainLayout({ children }) {
                     <NavItem to="/daily-classes" icon={<MdToday size={16} />} label="الحصص اليومية" />
                     <NavItem to="/attendance" icon={<MdAssignment size={16} />} label="الحضور" />
                     <NavItem to="/monthly-report" icon={<MdBarChart size={16} />} label="السجل الشهري" />
+                    <NavItem to="/monthly-overview" icon={<MdGridView size={16} />} label="ملخص شهري" />
                 </ul>
 
                 <div className="navbar-user">
@@ -188,6 +190,16 @@ function AppContent() {
                     <ProtectedRoute>
                         <MainLayout>
                             <MonthlyReport />
+                        </MainLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/monthly-overview"
+                element={
+                    <ProtectedRoute>
+                        <MainLayout>
+                            <MonthlyOverview />
                         </MainLayout>
                     </ProtectedRoute>
                 }

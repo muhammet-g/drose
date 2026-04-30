@@ -866,6 +866,105 @@ html, body, #root {
 
 .calendar-day:hover { transform: scale(1.08); }
 
+/* ══════════════════ MONTHLY OVERVIEW GRID ══════════════════ */
+
+.monthly-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1rem 1.4rem 0.8rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-slate);
+  font-size: 0.78rem;
+}
+
+.monthly-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.monthly-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid rgba(255,255,255,0.12);
+  flex-shrink: 0;
+}
+
+.monthly-grid-wrapper {
+  overflow: auto;
+  padding: 0.4rem 0 1.2rem;
+}
+
+.monthly-grid {
+  min-width: 980px;
+}
+
+.monthly-grid-row {
+  display: grid;
+  grid-template-columns: 220px repeat(31, 44px);
+  align-items: stretch;
+}
+
+.monthly-grid-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg-card);
+}
+
+.monthly-grid-cell {
+  border-bottom: 1px solid rgba(30,41,59,0.5);
+  border-left: 1px solid rgba(30,41,59,0.4);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+
+.monthly-grid-cell.name-cell {
+  justify-content: flex-start;
+  padding: 0 0.85rem;
+  font-weight: 600;
+  position: sticky;
+  right: 0;
+  z-index: 4;
+  background: var(--bg-card);
+  border-left: 1px solid rgba(30,41,59,0.6);
+}
+
+.monthly-grid-name {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.monthly-grid-day {
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.monthly-grid-dow {
+  font-size: 0.62rem;
+  color: var(--text-slate);
+}
+
+.monthly-grid-cell.status-cell {
+  border: 1px solid rgba(0,0,0,0.2);
+  transition: transform var(--transition), box-shadow var(--transition);
+  cursor: pointer;
+  padding: 0;
+}
+
+.monthly-grid-cell.status-cell:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+}
+
 /* ══════════════════ MISC ══════════════════ */
 
 .section-title {
