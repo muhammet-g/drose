@@ -981,6 +981,18 @@ html, body, #root {
   border-left: 1px solid rgba(30,41,59,0.2);
 }
 
+.monthly-grid-row.summary-row .monthly-grid-cell {
+  background: rgba(30,41,59,0.45);
+  color: var(--text-slate);
+  font-size: 0.72rem;
+  min-height: 36px;
+}
+
+.monthly-grid-row.summary-row .name-cell.summary-label {
+  color: var(--text-light);
+  font-weight: 600;
+}
+
 .monthly-stats-section {
   margin-top: 1.5rem;
   display: flex;
@@ -1262,11 +1274,22 @@ html, body, #root {
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
   .grid-3 { grid-template-columns: repeat(2, 1fr); }
   .page-content { padding: 1.25rem 1rem; }
+  .monthly-overview-page { padding: 1.1rem 0.85rem 2rem; }
+  .monthly-stats-grid { grid-template-columns: 1fr; }
+  .monthly-weekly-grid { grid-template-columns: 1fr; }
+  .monthly-circles { grid-template-columns: 1fr; }
+  .donut-chart, .donut-svg { width: 130px; height: 130px; }
+  .monthly-excused-item { flex-direction: column; align-items: flex-start; }
+  .monthly-excused-item .btn-ghost { align-self: flex-start; }
 }
 
 @media (max-width: 480px) {
   .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
   .login-card { padding: 1.75rem 1.25rem; }
+  .monthly-grid-row { grid-template-columns: 170px repeat(31, minmax(36px, 1fr)); }
+  .monthly-grid-cell { min-height: 40px; font-size: 0.7rem; }
+  .monthly-grid-day { font-size: 0.8rem; }
+  .monthly-grid-dow { font-size: 0.58rem; }
 }
 
 /* Animate in */

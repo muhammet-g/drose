@@ -372,6 +372,20 @@ function MonthlyOverview() {
         return value % 1 === 0 ? `${Math.round(value)}` : value.toFixed(1)
     }
 
+    const daySummaries = useMemo(() => {
+        if (!selectedMonth) return []
+        const { year, month } = getMonthRange()
+        return days.map(day => {
+            const date = `${year}-${month}-${String(day).padStart(2, '0')}`
+            return {
+                day,
+                date,
+                sessions: stats.sessionsByDate[date] || 0,
+                hours: (stats.minutesByDate[date] || 0) / 60
+            }
+        })
+    }, [selectedMonth, days, stats])
+
     const weeklyStats = useMemo(() => {
         if (!selectedMonth) return []
         const weekly = Array.from({ length: 4 }, (_, i) => ({
@@ -504,6 +518,28 @@ function MonthlyOverview() {
                                     ))}
                                     {fillerCells.map(idx => (
                                         <div className="monthly-grid-cell empty-cell" key={`head-empty-${idx}`} />
+                                    ))}
+                                </div>
+                                <div className="monthly-grid-row summary-row">
+                                    <div className="monthly-grid-cell name-cell summary-label">عدد الحصص</div>
+                                    {daySummaries.map(item => (
+                                        <div className="monthly-grid-cell summary-cell" key={`sessions-${item.day}`}>
+                                            {item.sessions}
+                                        </div>
+                                    ))}
+                                    {fillerCells.map(idx => (
+                                        <div className="monthly-grid-cell empty-cell" key={`sessions-empty-${idx}`} />
+                                    ))}
+                                </div>
+                                <div className="monthly-grid-row summary-row">
+                                    <div className="monthly-grid-cell name-cell summary-label">عدد الساعات</div>
+                                    {daySummaries.map(item => (
+                                        <div className="monthly-grid-cell summary-cell" key={`hours-${item.day}`}>
+                                            {formatDisplayHours(item.hours)}
+                                        </div>
+                                    ))}
+                                    {fillerCells.map(idx => (
+                                        <div className="monthly-grid-cell empty-cell" key={`hours-empty-${idx}`} />
                                     ))}
                                 </div>
                                 {students.map(student => (
