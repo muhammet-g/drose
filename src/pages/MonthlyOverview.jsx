@@ -420,6 +420,25 @@ function MonthlyOverview() {
         return { total, missed, percent }
     }, [stats])
 
+    const getDonutProps = (percent) => {
+        const size = 160
+        const stroke = 12
+        const radius = (size - stroke) / 2
+        const circumference = 2 * Math.PI * radius
+        const safePercent = Math.min(100, Math.max(0, percent || 0))
+        const offset = circumference - (safePercent / 100) * circumference
+        return { size, stroke, radius, circumference, offset }
+    }
+
+    const attendanceDonutProps = useMemo(
+        () => getDonutProps(attendanceDonut.percent),
+        [attendanceDonut.percent]
+    )
+    const hoursDonutProps = useMemo(
+        () => getDonutProps(hoursDonut.percent),
+        [hoursDonut.percent]
+    )
+
     return (
         <div className="page-content monthly-overview-page fade-in" dir="rtl">
             <div className="page-header">
@@ -553,12 +572,35 @@ function MonthlyOverview() {
                         <div className="monthly-circle-card">
                             <div
                                 className="donut-chart"
-                                style={{
-                                    '--donut-value': attendanceDonut.percent,
-                                    '--donut-main': '#10B981',
-                                    '--donut-track': 'rgba(239,68,68,0.35)'
-                                }}
+                                style={{ color: '#10B981' }}
                             >
+                                <svg
+                                    className="donut-svg"
+                                    width={attendanceDonutProps.size}
+                                    height={attendanceDonutProps.size}
+                                    viewBox={`0 0 ${attendanceDonutProps.size} ${attendanceDonutProps.size}`}
+                                >
+                                    <circle
+                                        className="donut-track"
+                                        stroke="rgba(239,68,68,0.35)"
+                                        strokeWidth={attendanceDonutProps.stroke}
+                                        fill="transparent"
+                                        r={attendanceDonutProps.radius}
+                                        cx={attendanceDonutProps.size / 2}
+                                        cy={attendanceDonutProps.size / 2}
+                                    />
+                                    <circle
+                                        className="donut-progress"
+                                        stroke="#10B981"
+                                        strokeWidth={attendanceDonutProps.stroke}
+                                        fill="transparent"
+                                        r={attendanceDonutProps.radius}
+                                        cx={attendanceDonutProps.size / 2}
+                                        cy={attendanceDonutProps.size / 2}
+                                        strokeDasharray={`${attendanceDonutProps.circumference} ${attendanceDonutProps.circumference}`}
+                                        strokeDashoffset={attendanceDonutProps.offset}
+                                    />
+                                </svg>
                                 <div className="donut-center">
                                     <div className="donut-value">{Math.round(attendanceDonut.percent)}%</div>
                                     <div className="donut-label">حضور</div>
@@ -572,12 +614,35 @@ function MonthlyOverview() {
                         <div className="monthly-circle-card">
                             <div
                                 className="donut-chart"
-                                style={{
-                                    '--donut-value': hoursDonut.percent,
-                                    '--donut-main': '#38BDF8',
-                                    '--donut-track': 'rgba(239,68,68,0.25)'
-                                }}
+                                style={{ color: '#38BDF8' }}
                             >
+                                <svg
+                                    className="donut-svg"
+                                    width={hoursDonutProps.size}
+                                    height={hoursDonutProps.size}
+                                    viewBox={`0 0 ${hoursDonutProps.size} ${hoursDonutProps.size}`}
+                                >
+                                    <circle
+                                        className="donut-track"
+                                        stroke="rgba(239,68,68,0.25)"
+                                        strokeWidth={hoursDonutProps.stroke}
+                                        fill="transparent"
+                                        r={hoursDonutProps.radius}
+                                        cx={hoursDonutProps.size / 2}
+                                        cy={hoursDonutProps.size / 2}
+                                    />
+                                    <circle
+                                        className="donut-progress"
+                                        stroke="#38BDF8"
+                                        strokeWidth={hoursDonutProps.stroke}
+                                        fill="transparent"
+                                        r={hoursDonutProps.radius}
+                                        cx={hoursDonutProps.size / 2}
+                                        cy={hoursDonutProps.size / 2}
+                                        strokeDasharray={`${hoursDonutProps.circumference} ${hoursDonutProps.circumference}`}
+                                        strokeDashoffset={hoursDonutProps.offset}
+                                    />
+                                </svg>
                                 <div className="donut-center">
                                     <div className="donut-value">{Math.round(hoursDonut.percent)}%</div>
                                     <div className="donut-label">ساعات</div>

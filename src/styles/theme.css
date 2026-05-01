@@ -1002,7 +1002,38 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 18px rgba(0,0,0,0.18);
 }
+
+.monthly-stats-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0));
+}
+
+.monthly-stats-card.primary { border-color: rgba(255,184,0,0.35); }
+.monthly-stats-card.primary::before { background: linear-gradient(90deg, #FFB800, rgba(255,184,0,0)); }
+
+.monthly-stats-card.success { border-color: rgba(16,185,129,0.35); }
+.monthly-stats-card.success::before { background: linear-gradient(90deg, #10B981, rgba(16,185,129,0)); }
+
+.monthly-stats-card.danger { border-color: rgba(239,68,68,0.35); }
+.monthly-stats-card.danger::before { background: linear-gradient(90deg, #EF4444, rgba(239,68,68,0)); }
+
+.monthly-stats-card.info { border-color: rgba(56,189,248,0.35); }
+.monthly-stats-card.info::before { background: linear-gradient(90deg, #38BDF8, rgba(56,189,248,0)); }
+
+.monthly-stats-card.warning { border-color: rgba(245,158,11,0.35); }
+.monthly-stats-card.warning::before { background: linear-gradient(90deg, #F59E0B, rgba(245,158,11,0)); }
+
+.monthly-stats-card.danger-soft { border-color: rgba(239,68,68,0.25); }
+.monthly-stats-card.danger-soft::before { background: linear-gradient(90deg, rgba(239,68,68,0.6), rgba(239,68,68,0)); }
 
 .monthly-stats-label {
   color: var(--text-slate);
@@ -1020,6 +1051,7 @@ html, body, #root {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius);
   padding: 1rem 1.2rem;
+  box-shadow: 0 14px 26px rgba(0,0,0,0.25);
 }
 
 .monthly-excused-header {
@@ -1050,11 +1082,146 @@ html, body, #root {
 
 .monthly-excused-name {
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.monthly-excused-badge {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.monthly-excused-badge.excused {
+  background: rgba(245,158,11,0.15);
+  color: #F59E0B;
+  border-color: rgba(245,158,11,0.35);
+}
+
+.monthly-excused-badge.postponed {
+  background: rgba(100,116,139,0.18);
+  color: #94A3B8;
+  border-color: rgba(148,163,184,0.35);
 }
 
 .monthly-excused-date {
   font-size: 0.78rem;
   color: var(--text-slate);
+}
+
+.monthly-circles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.monthly-circle-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  box-shadow: 0 14px 26px rgba(0,0,0,0.25);
+}
+
+.donut-chart {
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.donut-svg {
+  width: 160px;
+  height: 160px;
+  display: block;
+  transform: rotate(-90deg);
+}
+
+.donut-track {
+  stroke-linecap: round;
+}
+
+.donut-progress {
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  text-align: center;
+}
+
+.donut-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.donut-label {
+  font-size: 0.78rem;
+  color: var(--text-slate);
+}
+
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--text-slate);
+  text-align: center;
+}
+
+.monthly-weekly {
+  background: rgba(30,41,59,0.2);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+.monthly-weekly-header {
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+}
+
+.monthly-weekly-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+
+.monthly-weekly-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.monthly-weekly-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+}
+
+.monthly-weekly-row {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-slate);
+  font-size: 0.82rem;
 }
 
 /* ══════════════════ MISC ══════════════════ */
