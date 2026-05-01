@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import Swal from '../lib/swal'
-import { MdGridView, MdCalendarMonth, MdPerson } from 'react-icons/md'
+import { MdGridView, MdCalendarMonth, MdPerson, MdDeleteSweep, MdRefresh } from 'react-icons/md'
 
 const STATUS_INFO = {
     present: { text: 'حاضر', color: '#10B981', textColor: '#0B1221' },
@@ -107,6 +107,70 @@ function MonthlyOverview() {
             Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر تحميل البيانات', confirmButtonText: 'حسناً' })
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleResetAll = async () => {
+        const result = await Swal.fire({
+            title: 'تصفير جميع السجلات',
+            text: 'سيتم حذف جميع سجلات الحضور لجميع الطلاب نهائياً. هل أنت متأكد؟',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'نعم، تصفير الكل',
+            cancelButtonText: 'إلغاء'
+        })
+        if (!result.isConfirmed) return
+
+        try {
+            const { error } = await supabase
+                .from('attendance')
+                .delete()
+                .gte('date', '1900-01-01')
+            if (error) throw error
+
+            Swal.fire({ icon: 'success', title: 'تم التصفير', text: 'تم حذف جميع سجلات الحضور بنجاح', timer: 2000, showConfirmButton: false })
+            fetchMonthlyOverview()
+        } catch (err) {
+            console.error(err)
+            Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء تصفير السجلات', confirmButtonText: 'حسناً' })
+        }
+    }
+
+    const handleResetMonth = async () => {
+        if (!selectedMonth) {
+            Swal.fire({ icon: 'warning', title: 'تنبيه', text: 'يرجى اختيار شهر أولاً', confirmButtonText: 'حسناً' })
+            return
+        }
+        const [year, month] = selectedMonth.split('-')
+        const monthName = MONTH_NAMES[month]
+
+        const result = await Swal.fire({
+            title: `تصفير سجلات شهر ${monthName}`,
+            text: `سيتم حذف جميع سجلات الحضور لجميع الطلاب لشهر ${monthName} ${year}. هل أنت متأكد؟`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'نعم، تصفير سجلات الشهر',
+            cancelButtonText: 'إلغاء'
+        })
+        if (!result.isConfirmed) return
+
+        try {
+            const lastDay = new Date(year, month, 0).getDate()
+            const startDate = `${year}-${month}-01`
+            const endDate = `${year}-${month}-${String(lastDay).padStart(2, '0')}`
+
+            const { error } = await supabase
+                .from('attendance')
+                .delete()
+                .gte('date', startDate)
+                .lte('date', endDate)
+            if (error) throw error
+
+            Swal.fire({ icon: 'success', title: 'تم التصفير', text: `تم حذف سجلات شهر ${monthName} بنجاح`, timer: 2000, showConfirmButton: false })
+            fetchMonthlyOverview()
+        } catch (err) {
+            console.error(err)
+            Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء تصفير سجلات الشهر', confirmButtonText: 'حسناً' })
         }
     }
 
@@ -463,18 +527,36 @@ function MonthlyOverview() {
                 <p className="page-subtitle">عرض حضور وغياب جميع الطلاب خلال الشهر المختار</p>
             </div>
 
-            <div className="glass-card" style={{ maxWidth: 420, marginBottom: '1.5rem' }}>
-                <div className="card-header-custom">
-                    <MdCalendarMonth size={16} color="#FFB800" />
-                    اختر الشهر
+            <div className="monthly-overview-controls">
+                <div className="glass-card">
+                    <div className="card-header-custom">
+                        <MdCalendarMonth size={16} color="#FFB800" />
+                        اختر الشهر
+                    </div>
+                    <div className="card-body-custom">
+                        <input
+                            type="month"
+                            className="form-control-custom form-control-lg-custom"
+                            value={selectedMonth}
+                            onChange={e => setSelectedMonth(e.target.value)}
+                        />
+                    </div>
                 </div>
-                <div className="card-body-custom">
-                    <input
-                        type="month"
-                        className="form-control-custom form-control-lg-custom"
-                        value={selectedMonth}
-                        onChange={e => setSelectedMonth(e.target.value)}
-                    />
+                <div className="glass-card">
+                    <div className="card-header-custom">
+                        <MdDeleteSweep size={16} color="#EF4444" />
+                        <span style={{ color: '#EF4444' }}>تصفير السجلات</span>
+                    </div>
+                    <div className="card-body-custom" style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                        <button className="btn-danger-custom" style={{ justifyContent: 'center' }} onClick={handleResetAll}>
+                            <MdDeleteSweep size={15} />
+                            تصفير سجلات جميع الطلاب
+                        </button>
+                        <button className="btn-warning-custom" style={{ justifyContent: 'center' }} onClick={handleResetMonth}>
+                            <MdRefresh size={15} />
+                            تصفير سجلات الشهر الحالي
+                        </button>
+                    </div>
                 </div>
             </div>
 

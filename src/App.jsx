@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Dashboard from './pages/Dashboard'
@@ -6,13 +6,12 @@ import Students from './pages/Students'
 import Schedule from './pages/Schedule'
 import DailyClasses from './pages/DailyClasses'
 import Attendance from './pages/Attendance'
-import MonthlyReport from './pages/MonthlyReport'
 import MonthlyOverview from './pages/MonthlyOverview'
 import Login from './pages/Login'
 import Swal from './lib/swal'
 import {
     MdDashboard, MdPeople, MdCalendarMonth, MdToday,
-    MdAssignment, MdBarChart, MdLogout, MdMenu, MdClose,
+    MdAssignment, MdLogout, MdMenu, MdClose,
     MdMenuBook, MdGridView
 } from 'react-icons/md'
 
@@ -38,12 +37,12 @@ function ProtectedRoute({ children }) {
 }
 
 // NavLink wrapper
-function NavItem({ to, icon, label }) {
+function NavItem({ to, icon, label, onClick }) {
     const location = useLocation()
     const isActive = location.pathname === to
     return (
         <li>
-            <Link className={`nav-link-custom${isActive ? ' active' : ''}`} to={to}>
+            <Link className={`nav-link-custom${isActive ? ' active' : ''}`} to={to} onClick={onClick}>
                 {icon}
                 <span>{label}</span>
             </Link>
@@ -55,6 +54,7 @@ function NavItem({ to, icon, label }) {
 function MainLayout({ children }) {
     const { user, signOut } = useAuth()
     const [menuOpen, setMenuOpen] = useState(false)
+    const location = useLocation()
 
     const handleSignOut = async () => {
         const result = await Swal.fire({
@@ -74,6 +74,10 @@ function MainLayout({ children }) {
 
     const initials = user?.email ? user.email[0].toUpperCase() : '؟'
 
+    useEffect(() => {
+        setMenuOpen(false)
+    }, [location.pathname])
+
     return (
         <div className="app-wrapper">
             {/* Navigation Bar */}
@@ -87,13 +91,12 @@ function MainLayout({ children }) {
 
                 {/* Desktop links */}
                 <ul className={`navbar-links${menuOpen ? ' open' : ''}`}>
-                    <NavItem to="/" icon={<MdDashboard size={16} />} label="الرئيسية" />
-                    <NavItem to="/students" icon={<MdPeople size={16} />} label="الطلاب" />
-                    <NavItem to="/schedule" icon={<MdCalendarMonth size={16} />} label="جدولة الدروس" />
-                    <NavItem to="/daily-classes" icon={<MdToday size={16} />} label="الحصص اليومية" />
-                    <NavItem to="/attendance" icon={<MdAssignment size={16} />} label="الحضور" />
-                    <NavItem to="/monthly-report" icon={<MdBarChart size={16} />} label="السجل الشهري" />
-                    <NavItem to="/monthly-overview" icon={<MdGridView size={16} />} label="ملخص شهري" />
+                    <NavItem to="/" icon={<MdDashboard size={16} />} label="الرئيسية" onClick={() => setMenuOpen(false)} />
+                    <NavItem to="/students" icon={<MdPeople size={16} />} label="الطلاب" onClick={() => setMenuOpen(false)} />
+                    <NavItem to="/schedule" icon={<MdCalendarMonth size={16} />} label="جدولة الدروس" onClick={() => setMenuOpen(false)} />
+                    <NavItem to="/daily-classes" icon={<MdToday size={16} />} label="الحصص اليومية" onClick={() => setMenuOpen(false)} />
+                    <NavItem to="/attendance" icon={<MdAssignment size={16} />} label="الحضور" onClick={() => setMenuOpen(false)} />
+                    <NavItem to="/monthly-overview" icon={<MdGridView size={16} />} label="ملخص شهري" onClick={() => setMenuOpen(false)} />
                 </ul>
 
                 <div className="navbar-user">
@@ -180,16 +183,6 @@ function AppContent() {
                     <ProtectedRoute>
                         <MainLayout>
                             <Attendance />
-                        </MainLayout>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/monthly-report"
-                element={
-                    <ProtectedRoute>
-                        <MainLayout>
-                            <MonthlyReport />
                         </MainLayout>
                     </ProtectedRoute>
                 }
