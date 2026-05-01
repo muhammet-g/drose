@@ -134,15 +134,6 @@ function Dashboard() {
         }
     }
 
-    if (loading) {
-        return (
-            <div className="loading-screen">
-                <div className="loading-spinner" />
-                <span className="loading-text">جاري تحميل الإحصائيات...</span>
-            </div>
-        )
-    }
-
     const todayAttendanceCounts = useMemo(() => buildCounts(todayAttendanceRows), [todayAttendanceRows])
     const todaySchedulesSorted = useMemo(() => (
         [...todaySchedules].sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''))
@@ -175,6 +166,15 @@ function Dashboard() {
     }
 
     const nextClass = todaySchedulesSorted.find(item => toMinutes(item.start_time) > nowMinutes)
+
+    if (loading) {
+        return (
+            <div className="loading-screen">
+                <div className="loading-spinner" />
+                <span className="loading-text">جاري تحميل الإحصائيات...</span>
+            </div>
+        )
+    }
 
     return (
         <div className="page-content fade-in">
