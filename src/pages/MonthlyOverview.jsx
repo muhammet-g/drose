@@ -21,6 +21,7 @@ function MonthlyOverview() {
     const [selectedMonth, setSelectedMonth] = useState('')
     const [students, setStudents] = useState([])
     const [attendanceMap, setAttendanceMap] = useState({})
+    const [scheduleMap, setScheduleMap] = useState({})
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -59,14 +60,34 @@ function MonthlyOverview() {
                 .lte('date', endDate)
             if (attendanceError) throw attendanceError
 
+            const { data: scheduleData, error: scheduleError } = await supabase
+                .from('schedules')
+                .select('student_id, day_of_week, valid_from, valid_until')
+                .lte('valid_from', endDate)
+                .or(`valid_until.is.null,valid_until.gte.${startDate}`)
+            if (scheduleError) throw scheduleError
+
             const map = {}
                 ; (attendanceData || []).forEach(row => {
                     const key = `${row.student_id}|${row.date}`
                     map[key] = { id: row.id, status: row.status }
                 })
 
+            const schedulesByStudent = {}
+                ; (scheduleData || []).forEach(row => {
+                    if (!schedulesByStudent[row.student_id]) {
+                        schedulesByStudent[row.student_id] = []
+                    }
+                    schedulesByStudent[row.student_id].push({
+                        dayOfWeek: row.day_of_week,
+                        validFrom: row.valid_from || '1900-01-01',
+                        validUntil: row.valid_until || '9999-12-31'
+                    })
+                })
+
             setStudents(studentsData || [])
             setAttendanceMap(map)
+            setScheduleMap(schedulesByStudent)
         } catch (err) {
             console.error(err)
             Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر تحميل البيانات', confirmButtonText: 'حسناً' })
@@ -88,11 +109,21 @@ function MonthlyOverview() {
 
     const getCellInfo = (studentId, day) => {
         const { year, month } = getMonthRange()
+        const dayOfWeek = new Date(year, month - 1, day).getDay()
         const date = `${year}-${month}-${String(day).padStart(2, '0')}`
         const key = `${studentId}|${date}`
         const record = attendanceMap[key]
         const status = record?.status || 'none'
-        return { date, key, status, recordId: record?.id }
+        return { date, key, status, recordId: record?.id, dayOfWeek }
+    }
+
+    const isScheduledDay = (studentId, date, dayOfWeek) => {
+        const schedules = scheduleMap[studentId] || []
+        return schedules.some(schedule => (
+            schedule.dayOfWeek === dayOfWeek &&
+            date >= schedule.validFrom &&
+            date <= schedule.validUntil
+        ))
     }
 
     const handleCellClick = async (student, day) => {
@@ -169,6 +200,11 @@ function MonthlyOverview() {
         return `${MONTH_NAMES[month]} ${year}`
     }, [selectedMonth])
 
+    const fillerCells = useMemo(() => {
+        const count = 31 - days.length
+        return Array.from({ length: Math.max(0, count) }, (_, i) => i)
+    }, [days.length])
+
     return (
         <div className="page-content monthly-overview-page fade-in" dir="rtl">
             <div className="page-header">
@@ -232,6 +268,9 @@ function MonthlyOverview() {
                                             <div className="monthly-grid-dow">{getDayLabel(day)}</div>
                                         </div>
                                     ))}
+                                    {fillerCells.map(idx => (
+                                        <div className="monthly-grid-cell empty-cell" key={`head-empty-${idx}`} />
+                                    ))}
                                 </div>
                                 {students.map(student => (
                                     <div className="monthly-grid-row" key={student.id}>
@@ -241,11 +280,12 @@ function MonthlyOverview() {
                                         {days.map(day => {
                                             const cell = getCellInfo(student.id, day)
                                             const info = STATUS_INFO[cell.status]
+                                            const isScheduled = isScheduledDay(student.id, cell.date, cell.dayOfWeek)
                                             return (
                                                 <button
                                                     type="button"
                                                     key={day}
-                                                    className="monthly-grid-cell status-cell"
+                                                    className={`monthly-grid-cell status-cell${isScheduled ? ' scheduled-cell' : ''}`}
                                                     style={{ background: info.color, color: info.textColor }}
                                                     title={`${student.name} - ${day}: ${info.text}`}
                                                     onClick={() => handleCellClick(student, day)}
@@ -254,6 +294,9 @@ function MonthlyOverview() {
                                                 </button>
                                             )
                                         })}
+                                        {fillerCells.map(idx => (
+                                            <div className="monthly-grid-cell empty-cell" key={`row-empty-${student.id}-${idx}`} />
+                                        ))}
                                     </div>
                                 ))}
                             </div>
