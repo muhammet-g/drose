@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import Swal from '../lib/swal'
 import { MdGridView, MdCalendarMonth, MdPerson } from 'react-icons/md'
@@ -24,6 +24,16 @@ function MonthlyOverview() {
     const [scheduleMap, setScheduleMap] = useState({})
     const [attendanceRows, setAttendanceRows] = useState([])
     const [loading, setLoading] = useState(true)
+    const [displayStats, setDisplayStats] = useState({
+        totalSessions: 0,
+        present: 0,
+        absent: 0,
+        totalHours: 0,
+        excusedHours: 0,
+        absentHours: 0
+    })
+    const statsSectionRef = useRef(null)
+    const hasAnimatedRef = useRef(false)
 
     useEffect(() => {
         const now = new Date()
@@ -177,9 +187,20 @@ function MonthlyOverview() {
         let absentMinutes = 0
         let excusedMinutes = 0
 
+        const minutesByDate = {}
+        const sessionsByDate = {}
+
         Object.values(scheduleMinutesMap).forEach(minutes => {
             totalSessions += 1
             totalMinutes += minutes
+        })
+
+        Object.entries(scheduleMinutesMap).forEach(([key, minutes]) => {
+            const date = key.split('|')[1]
+            if (!minutesByDate[date]) minutesByDate[date] = 0
+            if (!sessionsByDate[date]) sessionsByDate[date] = 0
+            minutesByDate[date] += minutes
+            sessionsByDate[date] += 1
         })
 
         attendanceRows.forEach(row => {
@@ -188,16 +209,11 @@ function MonthlyOverview() {
 
             const minutes = scheduleMinutesMap[`${row.student_id}|${row.date}`] || 0
             if (row.status === 'absent') absentMinutes += minutes
-            if (row.status === 'excused') {
-                excusedMinutes += minutes
+            if (row.status === 'excused' || row.status === 'postponed') {
+                if (row.status === 'excused') excusedMinutes += minutes
                 excusedEntries.push(row)
             }
         })
-
-        const formatHours = (minutes) => {
-            const hours = minutes / 60
-            return hours % 1 === 0 ? `${hours}` : hours.toFixed(1)
-        }
 
         return {
             attendanceCounts,
@@ -206,7 +222,11 @@ function MonthlyOverview() {
             absentMinutes,
             excusedMinutes,
             excusedEntries,
-            formatHours
+            totalHours: totalMinutes / 60,
+            absentHours: absentMinutes / 60,
+            excusedHours: excusedMinutes / 60,
+            minutesByDate,
+            sessionsByDate
         }
     }, [attendanceRows, scheduleMinutesMap])
 
@@ -294,6 +314,111 @@ function MonthlyOverview() {
         students.forEach(student => { map[student.id] = student })
         return map
     }, [students])
+
+    useEffect(() => {
+        hasAnimatedRef.current = false
+        setDisplayStats({
+            totalSessions: 0,
+            present: 0,
+            absent: 0,
+            totalHours: 0,
+            excusedHours: 0,
+            absentHours: 0
+        })
+    }, [selectedMonth])
+
+    useEffect(() => {
+        if (!statsSectionRef.current) return undefined
+        const observer = new IntersectionObserver(([entry]) => {
+            if (!entry.isIntersecting || hasAnimatedRef.current) return
+            hasAnimatedRef.current = true
+
+            const start = performance.now()
+            const duration = 900
+            const target = {
+                totalSessions: stats.totalSessions,
+                present: stats.attendanceCounts.present,
+                absent: stats.attendanceCounts.absent,
+                totalHours: stats.totalHours,
+                excusedHours: stats.excusedHours,
+                absentHours: stats.absentHours
+            }
+
+            const animate = (now) => {
+                const progress = Math.min((now - start) / duration, 1)
+                const eased = 1 - Math.pow(1 - progress, 3)
+                setDisplayStats({
+                    totalSessions: Math.round(target.totalSessions * eased),
+                    present: Math.round(target.present * eased),
+                    absent: Math.round(target.absent * eased),
+                    totalHours: target.totalHours * eased,
+                    excusedHours: target.excusedHours * eased,
+                    absentHours: target.absentHours * eased
+                })
+                if (progress < 1) {
+                    requestAnimationFrame(animate)
+                }
+            }
+
+            requestAnimationFrame(animate)
+        }, { threshold: 0.25 })
+
+        observer.observe(statsSectionRef.current)
+        return () => observer.disconnect()
+    }, [stats])
+
+    const formatDisplayHours = (value) => {
+        if (Number.isNaN(value)) return '0'
+        return value % 1 === 0 ? `${Math.round(value)}` : value.toFixed(1)
+    }
+
+    const weeklyStats = useMemo(() => {
+        if (!selectedMonth) return []
+        const weekly = Array.from({ length: 4 }, (_, i) => ({
+            week: i + 1,
+            sessions: 0,
+            present: 0,
+            absent: 0,
+            totalMinutes: 0,
+            excusedMinutes: 0,
+            absentMinutes: 0
+        }))
+
+        Object.entries(stats.sessionsByDate).forEach(([date, sessions]) => {
+            const day = Number(date.split('-')[2])
+            const weekIndex = Math.min(3, Math.floor((day - 1) / 7))
+            if (!weekly[weekIndex]) return
+            weekly[weekIndex].sessions += sessions
+            weekly[weekIndex].totalMinutes += stats.minutesByDate[date] || 0
+        })
+
+        attendanceRows.forEach(row => {
+            const day = Number(row.date.split('-')[2])
+            const weekIndex = Math.min(3, Math.floor((day - 1) / 7))
+            if (!weekly[weekIndex]) return
+            if (row.status === 'present') weekly[weekIndex].present += 1
+            if (row.status === 'absent') weekly[weekIndex].absent += 1
+            if (row.status === 'excused') weekly[weekIndex].excusedMinutes += stats.minutesByDate[row.date] || 0
+            if (row.status === 'absent') weekly[weekIndex].absentMinutes += stats.minutesByDate[row.date] || 0
+        })
+
+        return weekly
+    }, [attendanceRows, selectedMonth, stats, getMonthRange])
+
+    const attendanceDonut = useMemo(() => {
+        const present = stats.attendanceCounts.present
+        const absent = stats.attendanceCounts.absent
+        const total = present + absent
+        const percent = total ? (present / total) * 100 : 0
+        return { present, absent, percent }
+    }, [stats])
+
+    const hoursDonut = useMemo(() => {
+        const total = stats.totalHours
+        const missed = stats.absentHours + stats.excusedHours
+        const percent = total ? ((total - missed) / total) * 100 : 0
+        return { total, missed, percent }
+    }, [stats])
 
     return (
         <div className="page-content monthly-overview-page fade-in" dir="rtl">
@@ -396,36 +521,112 @@ function MonthlyOverview() {
             </div>
 
             {!loading && students.length > 0 && (
-                <div className="monthly-stats-section">
+                <div className="monthly-stats-section" ref={statsSectionRef}>
                     <div className="monthly-stats-grid">
-                        <div className="monthly-stats-card">
+                        <div className="monthly-stats-card primary">
                             <span className="monthly-stats-label">عدد الحصص في الشهر</span>
-                            <span className="monthly-stats-value">{stats.totalSessions}</span>
+                            <span className="monthly-stats-value">{displayStats.totalSessions}</span>
                         </div>
-                        <div className="monthly-stats-card">
+                        <div className="monthly-stats-card success">
                             <span className="monthly-stats-label">عدد الحضور</span>
-                            <span className="monthly-stats-value">{stats.attendanceCounts.present}</span>
+                            <span className="monthly-stats-value">{displayStats.present}</span>
                         </div>
-                        <div className="monthly-stats-card">
+                        <div className="monthly-stats-card danger">
                             <span className="monthly-stats-label">عدد الغياب</span>
-                            <span className="monthly-stats-value">{stats.attendanceCounts.absent}</span>
+                            <span className="monthly-stats-value">{displayStats.absent}</span>
                         </div>
-                        <div className="monthly-stats-card">
+                        <div className="monthly-stats-card info">
                             <span className="monthly-stats-label">عدد ساعات الحصص</span>
-                            <span className="monthly-stats-value">{stats.formatHours(stats.totalMinutes)}</span>
+                            <span className="monthly-stats-value">{formatDisplayHours(displayStats.totalHours)}</span>
                         </div>
-                        <div className="monthly-stats-card">
+                        <div className="monthly-stats-card warning">
                             <span className="monthly-stats-label">ساعات التأجيل بعذر</span>
-                            <span className="monthly-stats-value">{stats.formatHours(stats.excusedMinutes)}</span>
+                            <span className="monthly-stats-value">{formatDisplayHours(displayStats.excusedHours)}</span>
                         </div>
-                        <div className="monthly-stats-card">
+                        <div className="monthly-stats-card danger-soft">
                             <span className="monthly-stats-label">ساعات الغياب</span>
-                            <span className="monthly-stats-value">{stats.formatHours(stats.absentMinutes)}</span>
+                            <span className="monthly-stats-value">{formatDisplayHours(displayStats.absentHours)}</span>
+                        </div>
+                    </div>
+
+                    <div className="monthly-circles">
+                        <div className="monthly-circle-card">
+                            <div
+                                className="donut-chart"
+                                style={{
+                                    '--donut-value': attendanceDonut.percent,
+                                    '--donut-main': '#10B981',
+                                    '--donut-track': 'rgba(239,68,68,0.35)'
+                                }}
+                            >
+                                <div className="donut-center">
+                                    <div className="donut-value">{Math.round(attendanceDonut.percent)}%</div>
+                                    <div className="donut-label">حضور</div>
+                                </div>
+                            </div>
+                            <div className="donut-legend">
+                                <span>حاضر: {attendanceDonut.present}</span>
+                                <span>غائب: {attendanceDonut.absent}</span>
+                            </div>
+                        </div>
+                        <div className="monthly-circle-card">
+                            <div
+                                className="donut-chart"
+                                style={{
+                                    '--donut-value': hoursDonut.percent,
+                                    '--donut-main': '#38BDF8',
+                                    '--donut-track': 'rgba(239,68,68,0.25)'
+                                }}
+                            >
+                                <div className="donut-center">
+                                    <div className="donut-value">{Math.round(hoursDonut.percent)}%</div>
+                                    <div className="donut-label">ساعات</div>
+                                </div>
+                            </div>
+                            <div className="donut-legend">
+                                <span>الإجمالي: {formatDisplayHours(hoursDonut.total)}</span>
+                                <span>الفاقد: {formatDisplayHours(hoursDonut.missed)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="monthly-weekly">
+                        <div className="monthly-weekly-header">إحصائيات أسبوعية</div>
+                        <div className="monthly-weekly-grid">
+                            {weeklyStats.map(week => (
+                                <div className="monthly-weekly-card" key={week.week}>
+                                    <div className="monthly-weekly-title">الأسبوع {week.week}</div>
+                                    <div className="monthly-weekly-row">
+                                        <span>الحصص</span>
+                                        <span>{week.sessions}</span>
+                                    </div>
+                                    <div className="monthly-weekly-row">
+                                        <span>الحضور</span>
+                                        <span>{week.present}</span>
+                                    </div>
+                                    <div className="monthly-weekly-row">
+                                        <span>الغياب</span>
+                                        <span>{week.absent}</span>
+                                    </div>
+                                    <div className="monthly-weekly-row">
+                                        <span>ساعات الحصص</span>
+                                        <span>{formatDisplayHours(week.totalMinutes / 60)}</span>
+                                    </div>
+                                    <div className="monthly-weekly-row">
+                                        <span>ساعات بعذر</span>
+                                        <span>{formatDisplayHours(week.excusedMinutes / 60)}</span>
+                                    </div>
+                                    <div className="monthly-weekly-row">
+                                        <span>ساعات الغياب</span>
+                                        <span>{formatDisplayHours(week.absentMinutes / 60)}</span>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
                     <div className="monthly-excused-list">
-                        <div className="monthly-excused-header">طلاب لديهم إذن غياب</div>
+                        <div className="monthly-excused-header">طلاب لديهم إذن غياب أو تأجيل</div>
                         {stats.excusedEntries.length === 0 ? (
                             <div className="monthly-excused-empty">لا يوجد طلاب لديهم إذن خلال هذا الشهر</div>
                         ) : (
@@ -433,10 +634,16 @@ function MonthlyOverview() {
                                 {stats.excusedEntries.map((row) => {
                                     const student = studentById[row.student_id]
                                     const day = Number(row.date.split('-')[2])
+                                    const statusLabel = row.status === 'excused' ? 'بعذر' : 'مؤجل'
                                     return (
                                         <div className="monthly-excused-item" key={row.id}>
                                             <div>
-                                                <div className="monthly-excused-name">{student?.name || '—'}</div>
+                                                <div className="monthly-excused-name">
+                                                    {student?.name || '—'}
+                                                    <span className={`monthly-excused-badge ${row.status === 'excused' ? 'excused' : 'postponed'}`}>
+                                                        {statusLabel}
+                                                    </span>
+                                                </div>
                                                 <div className="monthly-excused-date">{row.date}</div>
                                             </div>
                                             <button
