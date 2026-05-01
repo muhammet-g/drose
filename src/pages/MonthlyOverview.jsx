@@ -170,7 +170,7 @@ function MonthlyOverview() {
     }, [selectedMonth])
 
     return (
-        <div className="page-content fade-in" dir="rtl">
+        <div className="page-content monthly-overview-page fade-in" dir="rtl">
             <div className="page-header">
                 <h1 className="page-title">
                     <span className="page-title-icon"><MdGridView size={22} /></span>

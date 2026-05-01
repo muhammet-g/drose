@@ -256,6 +256,11 @@ html, body, #root {
   margin: 0 auto;
 }
 
+.monthly-overview-page {
+  max-width: none;
+  padding: 1.5rem 1rem 2.5rem;
+}
+
 .page-header {
   margin-bottom: 2rem;
 }
