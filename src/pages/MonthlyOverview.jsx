@@ -24,6 +24,9 @@ function MonthlyOverview() {
     const [scheduleMap, setScheduleMap] = useState({})
     const [attendanceRows, setAttendanceRows] = useState([])
     const [loading, setLoading] = useState(true)
+    const [resetStudentId, setResetStudentId] = useState('')
+    const [resetFromDate, setResetFromDate] = useState('')
+    const [resetToDate, setResetToDate] = useState('')
     const [displayStats, setDisplayStats] = useState({
         totalSessions: 0,
         present: 0,
@@ -171,6 +174,44 @@ function MonthlyOverview() {
         } catch (err) {
             console.error(err)
             Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء تصفير سجلات الشهر', confirmButtonText: 'حسناً' })
+        }
+    }
+
+    const handleResetStudentRange = async () => {
+        if (!resetStudentId || !resetFromDate || !resetToDate) {
+            Swal.fire({ icon: 'warning', title: 'تنبيه', text: 'يرجى اختيار الطالب وتحديد التاريخ من وإلى', confirmButtonText: 'حسناً' })
+            return
+        }
+        if (resetFromDate > resetToDate) {
+            Swal.fire({ icon: 'warning', title: 'تنبيه', text: 'تاريخ البداية يجب أن يكون قبل تاريخ النهاية', confirmButtonText: 'حسناً' })
+            return
+        }
+
+        const studentName = students.find(s => s.id === resetStudentId)?.name || 'الطالب'
+        const result = await Swal.fire({
+            title: `تصفير سجلات: ${studentName}`,
+            text: `سيتم حذف سجلات الحضور من ${resetFromDate} إلى ${resetToDate}. هل أنت متأكد؟`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'نعم، تصفير السجلات',
+            cancelButtonText: 'إلغاء'
+        })
+        if (!result.isConfirmed) return
+
+        try {
+            const { error } = await supabase
+                .from('attendance')
+                .delete()
+                .eq('student_id', resetStudentId)
+                .gte('date', resetFromDate)
+                .lte('date', resetToDate)
+            if (error) throw error
+
+            Swal.fire({ icon: 'success', title: 'تم التصفير', text: 'تم حذف سجلات الطالب للفترة المحددة', timer: 2000, showConfirmButton: false })
+            fetchMonthlyOverview()
+        } catch (err) {
+            console.error(err)
+            Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ أثناء تصفير السجلات', confirmButtonText: 'حسناً' })
         }
     }
 
@@ -556,6 +597,37 @@ function MonthlyOverview() {
                             <MdRefresh size={15} />
                             تصفير سجلات الشهر الحالي
                         </button>
+                        <div className="reset-range">
+                            <label className="form-label-custom">تصفير سجل طالب لفترة</label>
+                            <select
+                                className="form-control-custom form-select-custom"
+                                value={resetStudentId}
+                                onChange={e => setResetStudentId(e.target.value)}
+                            >
+                                <option value="">-- اختر طالباً --</option>
+                                {students.map(student => (
+                                    <option key={student.id} value={student.id}>{student.name}</option>
+                                ))}
+                            </select>
+                            <div className="reset-range-row">
+                                <input
+                                    type="date"
+                                    className="form-control-custom"
+                                    value={resetFromDate}
+                                    onChange={e => setResetFromDate(e.target.value)}
+                                />
+                                <input
+                                    type="date"
+                                    className="form-control-custom"
+                                    value={resetToDate}
+                                    onChange={e => setResetToDate(e.target.value)}
+                                />
+                            </div>
+                            <button className="btn-danger-custom" style={{ justifyContent: 'center' }} onClick={handleResetStudentRange}>
+                                <MdDeleteSweep size={15} />
+                                تصفير سجل الطالب للفترة
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
